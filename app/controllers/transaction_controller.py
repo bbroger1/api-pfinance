@@ -50,7 +50,7 @@ def get_all_transactions():
 
 def filter_transactions_controller(filters):
     try:
-        query = Transaction.query
+        query = Transaction.query.order_by(desc(cast(Transaction.transaction_date, Date)))
 
         if filters:
             if "category_id" in filters:

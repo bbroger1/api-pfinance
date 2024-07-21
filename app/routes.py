@@ -83,7 +83,7 @@ def filter_transactions():
                 transaction_dict = item.to_dict()
                 transactions.append(transaction_dict)
         print(transactions[0])
-        return response_json("success", "Lista de transações", transactions)
+        return response_json("success", "Lista de transações 1", transactions)
     except Exception as error:
         print("Error filter_transactions: ", error)
         message = "Lista de transações não pode ser recuperada"
