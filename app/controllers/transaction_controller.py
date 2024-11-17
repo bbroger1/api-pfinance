@@ -5,7 +5,7 @@ from ..database import db
 
 def get_categories():
     try:
-        categories = Category.query.all()
+        categories = Category.query.order_by(Category.name).all()
         return [category.to_dict() for category in categories]
     except Exception as error:
         print("Error get_transactions: ", error)
@@ -14,7 +14,7 @@ def get_categories():
 
 def get_subCategories(category_id):
     try:
-        subcategories = SubCategory.query.filter_by(category_id=category_id).all()
+        subcategories = SubCategory.query.filter_by(category_id=category_id).order_by(SubCategory.name).all()
         return [subcategory.to_dict() for subcategory in subcategories]
     except Exception as error:
         print("Error get_transctions: ", error)

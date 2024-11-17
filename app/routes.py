@@ -82,7 +82,7 @@ def filter_transactions():
             for item in result:
                 transaction_dict = item.to_dict()
                 transactions.append(transaction_dict)
-        print(transactions[0])
+        #print(transactions[0])
         return response_json("success", "Lista de transações 1", transactions)
     except Exception as error:
         print("Error filter_transactions: ", error)
@@ -232,11 +232,6 @@ def upload_file(file, type_import):
             data_list = file_content.decode('utf-8').split('\n')
         except UnicodeDecodeError:
             data_list = file_content.decode('latin-1').split('\n')
-
-        if data_list:
-            print(data_list[0])
-        else:
-            print("A lista está vazia após a conversão.")
 
         with open(path, 'w', encoding='utf-8') as f:
             for linha in data_list:

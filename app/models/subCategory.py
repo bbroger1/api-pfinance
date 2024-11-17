@@ -12,7 +12,7 @@ class SubCategory(db.Model):
         "Category", backref=db.backref("subcategories", lazy=True)
     )
 
-    def __init__(self, name, category, status=1):
+    def __init__(self, name: str, category, status=1):
         self.name = name
         self.category = category
         self.status = status

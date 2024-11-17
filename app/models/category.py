@@ -7,7 +7,7 @@ class Category(db.Model):
     name = db.Column(db.String(255), nullable=False)
     status = db.Column(db.Integer, default=1)
 
-    def __init__(self, name, status=1):
+    def __init__(self, name: str, status=1):
         self.name = name
         self.status = status
 
