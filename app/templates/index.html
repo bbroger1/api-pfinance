@@ -1,0 +1,236 @@
+{% extends 'includes/base.html' %}
+{% block title %}PFinance{% endblock %}
+{% block styles %}
+<!-- Theme Config Js -->
+<script src="{{ url_for('static', filename='assets/js/hyper-config.js') }}"></script>
+
+<!-- App css -->
+<link href="{{ url_for('static', filename='assets/css/app-saas.min.css') }}" rel="stylesheet" type="text/css" id="app-style">
+
+<!-- Icons css -->
+<link href="{{ url_for('static', filename='assets/css/icons.min.css') }}" rel="stylesheet" type="text/css">
+{% endblock %}
+
+{% block content %}
+<div class="content-page">
+    <div class="content">   
+        <!-- Start Content-->
+        <div class="container-fluid">
+
+            <!-- start page title -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="page-title-box">
+                        <div class="page-title-right">
+                            <ol class="breadcrumb m-0">
+                                <li class="breadcrumb-item active">Dashboard</li>
+                            </ol>
+                        </div>
+                        <h4 class="page-title">Dashboard</h4>
+                    </div>
+                </div>
+            </div>
+            <!-- end page title -->
+
+            <div class="row">
+                <div class="col-12">
+                    <div class="card widget-inline">
+                        <div class="card-body p-0">
+                            <div class="row g-0">
+                                <div class="col-sm-4 col-lg-4">
+                                    <div class="card rounded-0 shadow-none m-0">
+                                        <div class="card-body text-center">
+                                            <i class="ri-briefcase-line text-muted font-24"></i>
+                                            <h3><span>29</span></h3>
+                                            <p class="text-muted font-15 mb-0">Receitas</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4 col-lg-4">
+                                    <div class="card rounded-0 shadow-none m-0 border-start border-light">
+                                        <div class="card-body text-center">
+                                            <i class="ri-focus-2-line text-muted font-24"></i>
+                                            <h3><span>31</span></h3>
+                                            <p class="text-muted font-15 mb-0">Despesas</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4 col-lg-4">
+                                    <div class="card rounded-0 shadow-none m-0 border-start border-light">
+                                        <div class="card-body text-center">
+                                            <i class="uil-clipboard-alt text-muted font-24"></i>
+                                            <h3><span>715</span></h3>
+                                            <p class="text-muted font-15 mb-0">Saldo</p>
+                                        </div>
+                                    </div>
+                                </div>                                
+                            </div> <!-- end row -->
+                        </div>
+                    </div> <!-- end card-box-->
+                </div> <!-- end col-->
+            </div>
+            <!-- end row-->
+
+            <!-- Gráfico últimos 12 meses-->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h4 class="header-title">Saldo Mensal</h4>
+                            <div>
+                                <button type="button" class="btn btn-soft-secondary btn-sm">
+                                    Todas
+                                </button>
+                                <button type="button" class="btn btn-soft-primary btn-sm">
+                                    1M
+                                </button>
+                                <button type="button" class="btn btn-soft-secondary btn-sm">
+                                    6M
+                                </button>
+                                <button type="button" class="btn btn-soft-secondary btn-sm">
+                                    1A
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <div dir="ltr">
+                                <div class="chartjs-chart" style="height: 320px;">
+                                    <canvas id="task-area-chart" data-bgcolor="#727cf5" data-bordercolor="#727cf5"></canvas>
+                                </div>
+                            </div>
+                        </div> <!-- end card body-->
+                    </div> <!-- end card -->
+                </div><!-- end col-->
+            </div>
+            <!-- end row-->
+
+            <!-- Extrato de receitas e despesas por categoria e subcategoria-->
+            <div class="row">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h4 class="header-title">Extrato</h4>
+                    </div>
+                    <div class="card-body pt-2">
+                        <div class="table-responsive">
+                            <table class="table table-centered table-nowrap table-hover mb-0">
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <h5 class="font-14 my-1"><a href="javascript:void(0);" class="text-body">KR1</a></h5>
+                                            <span class="text-muted font-13">Projeto 1</span><br>
+                                            <span class="text-muted font-13">Cadência: Mensal</span>
+                                        </td>
+                                        <td>
+                                            <span class="text-muted font-13">Status</span> <br>
+                                            <span class="badge badge-warning-lighten">Ativo</span>
+                                        </td>
+                                        <td>
+                                            <span class="text-muted font-13">Confiança</span> <br>
+                                            <span class="badge badge-success-lighten">Vai atingir</span>
+                                        </td>
+                                        <td>
+                                            <span class="text-muted font-13">Responsável</span>
+                                            <h5 class="font-14 mt-1 fw-normal">Fulano </h5>
+                                        </td>
+                                        <td class="table-action" style="width: 90px;">
+                                            <a href="javascript: void(0);" class="action-icon"> <i class="mdi mdi-pencil"></i></a>
+                                            <a href="javascript: void(0);" class="action-icon"> <i class="mdi mdi-delete"></i></a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <h5 class="font-14 my-1"><a href="javascript:void(0);" class="text-body">KR1</a></h5>
+                                            <span class="text-muted font-13">Projeto 2</span><br>
+                                            <span class="text-muted font-13">Cadência: Mensal</span>
+                                        </td>
+                                        <td>
+                                            <span class="text-muted font-13">Status</span> <br>
+                                            <span class="badge badge-primary-lighten">Ativo</span>
+                                        </td>
+                                        <td>
+                                            <span class="text-muted font-13">Confiança</span> <br>
+                                            <span class="badge badge-success-lighten">Vai atingir</span>
+                                        </td>
+                                        <td>
+                                            <span class="text-muted font-13">Responsável</span>
+                                            <h5 class="font-14 mt-1 fw-normal">Fulano </h5>
+                                        </td>
+                                        <td class="table-action" style="width: 90px;">
+                                            <a href="javascript: void(0);" class="action-icon"> <i class="mdi mdi-pencil"></i></a>
+                                            <a href="javascript: void(0);" class="action-icon"> <i class="mdi mdi-delete"></i></a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <h5 class="font-14 my-1"><a href="javascript:void(0);" class="text-body">KR1</a></h5>
+                                            <span class="text-muted font-13">Projeto 3</span><br>
+                                            <span class="text-muted font-13">Cadência: Mensal</span>
+                                        </td>
+                                        <td>
+                                            <span class="text-muted font-13">Status</span> <br>
+                                            <span class="badge badge-warning-lighten">Ativo</span>
+                                        </td>
+                                        <td>
+                                            <span class="text-muted font-13">Confiança</span> <br>
+                                            <span class="badge badge-success-lighten">Vai atingir</span>
+                                        </td>
+                                        <td>
+                                            <span class="text-muted font-13">Responsável</span>
+                                            <h5 class="font-14 mt-1 fw-normal">Fulano </h5>
+                                        </td>
+                                        <td class="table-action" style="width: 90px;">
+                                            <a href="javascript: void(0);" class="action-icon"> <i class="mdi mdi-pencil"></i></a>
+                                            <a href="javascript: void(0);" class="action-icon"> <i class="mdi mdi-delete"></i></a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <h5 class="font-14 my-1"><a href="javascript:void(0);" class="text-body">KR1</a></h5>
+                                            <span class="text-muted font-13">Projeto 4</span><br>
+                                            <span class="text-muted font-13">Cadência: Mensal</span>
+                                        </td>
+                                        <td>
+                                            <span class="text-muted font-13">Status</span> <br>
+                                            <span class="badge badge-warning-lighten">Ativo</span>
+                                        </td>
+                                        <td>
+                                            <span class="text-muted font-13">Confiança</span> <br>
+                                            <span class="badge badge-success-lighten">Vai atingir</span>
+                                        </td>
+                                        <td>
+                                            <span class="text-muted font-13">Responsável</span>
+                                            <h5 class="font-14 mt-1 fw-normal">Fulano </h5>
+                                        </td>
+                                        <td class="table-action" style="width: 90px;">
+                                            <a href="javascript: void(0);" class="action-icon"> <i class="mdi mdi-pencil"></i></a>
+                                            <a href="javascript: void(0);" class="action-icon"> <i class="mdi mdi-delete"></i></a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div> <!-- end table-responsive-->
+
+                    </div> <!-- end card body-->
+                </div> <!-- end card -->
+            </div>
+            <!-- end row-->
+        </div> <!-- container -->
+    </div> <!-- content -->
+{% endblock %}
+
+{% block scripts %}
+<!-- Vendor js -->
+<script src="{{ url_for('static', filename='assets/js/vendor.min.js') }}"></script>
+
+<!-- Chart js -->
+<script src="{{ url_for('static', filename='assets/vendor/chart.js/chart.min.js') }}"></script>
+
+<!-- Projects Analytics Dashboard App js -->
+<script src="{{ url_for('static', filename='assets/js/pages/demo.dashboard-projects.js') }}"></script>
+
+<!-- App js -->
+<script src="{{ url_for('static', filename='assets/js/app.min.js') }}"></script>
+{% endblock %}

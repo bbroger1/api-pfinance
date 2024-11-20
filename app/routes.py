@@ -1,4 +1,4 @@
-from flask import jsonify, Blueprint, request
+from flask import jsonify, Blueprint, render_template, request
 from flask_wtf.csrf import generate_csrf
 from werkzeug.utils import secure_filename
 import datetime, csv, os, json, traceback, decimal
@@ -7,6 +7,14 @@ from config import Config
 from .controllers.transaction_controller import *
 
 main = Blueprint("main", __name__)
+
+@main.route("/")
+def index():
+    return render_template("index.html")
+
+@main.route("/balance")
+def balance():
+    return render_template("balance.html")
 
 @main.route("/pfinance/categories", methods=["POST"])
 def list_categories():

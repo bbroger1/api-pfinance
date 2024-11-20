@@ -1,0 +1,74 @@
+<!-- ========== Left Sidebar Start ========== -->
+<div class="leftside-menu">
+    <!-- Brand Logo Light -->
+    <a href="{{ url_for('main.index')}}" class="logo logo-light">
+        <span class="logo-lg">
+            PFinan
+        </span>
+        <span class="logo-sm">
+            PFinan
+        </span>
+    </a>
+
+    <!-- Brand Logo Dark -->
+    <a href="{{ url_for('main.index')}}" class="logo logo-dark">
+        <span class="logo-lg">
+            PFinan
+        </span>
+        <span class="logo-sm">
+            PFinan
+        </span>
+    </a>
+
+    <!-- Sidebar Hover Menu Toggle Button -->
+    <div class="button-sm-hover" data-bs-toggle="tooltip" data-bs-placement="right" title="Mostrar sidebar">
+        <i class="ri-checkbox-blank-circle-line align-middle"></i>
+    </div>
+
+    <!-- Full Sidebar Menu Close Button -->
+    <div class="button-close-fullsidebar">
+        <i class="ri-close-fill align-middle"></i>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="h-100" id="leftside-menu-container" data-simplebar="">
+
+        <!--- Sidemenu -->
+        <ul class="side-nav">
+
+            <li class="side-nav-title">Navegação</li>
+
+            <li class="side-nav-item">
+                <a href="{{ url_for('main.index')}}" class="side-nav-link">
+                    <i class="ri-dashboard-3-line"></i>
+                    <span> Dashboard </span>
+                </a>
+            </li>
+
+            <li class="side-nav-item">
+                <a href="{{ url_for('main.balance')}}" class="side-nav-link">
+                    <i class="ri-briefcase-line"></i>
+                    <span> Extrato </span>
+                </a>
+            </li>
+
+            <li class="side-nav-item">
+                <a href="{{ url_for('main.index')}}" class="side-nav-link">
+                    <i class="ri-focus-2-line"></i>
+                    <span> Novo Lançamento </span>
+                </a>
+            </li>
+
+            <li class="side-nav-item">
+                <a href="{{ url_for('main.index')}}" class="side-nav-link">
+                    <i class="uil-clipboard-alt"></i>
+                    <span> Importar Arquivo </span>
+                </a>
+            </li>
+        </ul>
+        <!--- End Sidemenu -->
+
+        <div class="clearfix"></div>
+    </div>
+</div>
+<!-- ========== Left Sidebar End ========== -->

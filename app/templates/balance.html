@@ -1,0 +1,322 @@
+{% extends 'includes/base.html' %}
+{% block title %}PFinance{% endblock %}
+{% block styles %}
+    <!-- Theme Config Js -->
+    <script src="{{ url_for('static', filename='assets/js/hyper-config.js') }}"></script>
+
+    <!-- App css -->
+    <link href="{{ url_for('static', filename='assets/css/app-saas.min.css') }}" rel="stylesheet" type="text/css" id="app-style">
+
+    <!-- Icons css -->
+    <link href="{{ url_for('static', filename='assets/css/icons.min.css') }}" rel="stylesheet" type="text/css">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/style.css') }}">
+{% endblock %}
+
+{% block content %}
+    <div class="content-page">
+        <div class="content">
+            <div class="container-fluid">
+                <!-- start page title -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="page-title-box">
+                            <div class="page-title-right">
+                                <ol class="breadcrumb m-0">
+                                    <li class="breadcrumb-item active">Extrato</li>
+                                </ol>
+                            </div>
+                            <h4 class="page-title">Extrato</h4>
+                        </div>
+                    </div>
+                </div>
+                <!-- end page title -->
+
+                <section class="mt-1" id="balance">
+                    <h2 class="sr-only">Balanço</h2>
+                    <div class="card shadow">
+                        <h3>
+                            <span>Receitas</span>
+                            <img src="{{ url_for('static', filename='assets/images/income.svg') }}" alt="Receitas">
+                        </h3>
+                        <p id="incomeDisplay"></p>
+                    </div>
+                    <div class="card shadow">
+                        <h3>
+                            <span>Despesas</span>
+                            <img src="{{ url_for('static', filename='/assets/images/expense.svg') }}" alt="Despesas">
+                        </h3>
+                        <p id="expenseDisplay"></p>
+                    </div>
+                    <div class="card total shadow" id="total">
+                        <h3>
+                            <span>Saldo</span>
+                            <img src="{{ url_for('static', filename='/assets/images/total.svg') }}" alt="Saldo">
+                        </h3>
+                        <p id="totalDisplay"></p>
+                    </div>
+                </section>
+
+                <section id="transaction">
+                    <div>
+                        <h2 class="sr-only">Transações</h2>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-2 mb-2">
+                            <select class="form-select" name="selectYear" id="selectYear">
+                                <option value="2024">2024</option>
+                                <option value="2025">2025</option>
+                                <option value="2026">2026</option>
+                                <option value="2027">2027</option>
+                                <option value="2028">2028</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-2 mb-2">
+                            <select class="form-select" name="selectMonth" id="selectMonth">
+                                <option value="1">Jan</option>
+                                <option value="2">Fev</option>
+                                <option value="3">Mar</option>
+                                <option value="4">Abr</option>
+                                <option value="5">Mai</option>
+                                <option value="6">Jun</option>
+                                <option value="7">Jul</option>
+                                <option value="8">Ago</option>
+                                <option value="9">Set</option>
+                                <option value="10">Out</option>
+                                <option value="11">Nov</option>
+                                <option value="12">Dez</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-8 text-end mb-2">
+                            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modal"
+                                onclick="fillModal()">
+                                + Nova Transação
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal"
+                                data-bs-target="#modal-import">
+                                Importar CSV
+                            </button>
+                            <a href="/transactions-all.html" class="btn btn-sm btn-outline-info">
+                                Ver tudo
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <input type="hidden" id="page" name="page" value="1">
+                        <table class="table table-sm table-hover" id="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Descrição</th>
+                                    <th>Categoria</th>
+                                    <th>SubCategoria</th>                            
+                                    <th class="text-center">Valor</th>
+                                    <th class="text-center">Tipo</th>
+                                    <th class="text-center"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+
+                        </table>
+                    </div>
+                </section>
+        
+                <div class="modal modal-lg fade" id="modal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h2 class="modal-title fs-5" id="modalLabel">Incluir transação</h2>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <form id="form-modal" onsubmit="Form.submit(event)">
+                                <div class="modal-body">
+                                    <div class="mb-2">
+                                        <label class="form-label" for="description"> Descrição</label>
+                                        <input class="form-control" type="text" id="description" name="description" />
+                                    </div>
+        
+                                    <div class="row mb-2">
+                                        <div class="col-md-6">
+                                            <label class="form-label" for="category"> Categoria</label>
+                                            <select class="form-select" name="category" id="category">
+                                                <option value="">Selecione</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label" for="subcategory"> Subcategoria</label>
+                                            <select class="form-select" name="subcategory" id="subcategory">
+                                                <option value="">Selecione</option>
+                                            </select>
+                                        </div>
+                                    </div>
+        
+                                    <div class="row mb-2">
+                                        <div class="col-md-4">
+                                            <label class="form-label" for="transactionType"> Tipo Transação</label>
+                                            <select class="form-select" name="transactionType" id="transactionType">
+                                                <option value="">Selecione</option>
+                                                <option value="receita">Receita</option>
+                                                <option value="despesa">Despesa</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label" for="amount"> Valor</label>
+                                            <input class="form-control" type="number" step="0.01" id="amount" name="amount"
+                                                placeholder="0,00" />
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label" for="date"> Data</label>
+                                            <input class="form-control" type="date" id="date" name="date" placeholder="Data" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button id="dismissButton" type="button" class="btn btn-sm btn-secondary"
+                                        data-bs-dismiss="modal">Cancelar</button>
+                                    <button type="submit" class="btn btn-sm btn-primary">Salvar</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+        
+                <div class="modal modal-lg fade" id="modal-edit" tabindex="-1" aria-labelledby="modalEditLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h2 class="modal-title fs-5" id="modalEditLabel">Editar transação</h2>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <form onsubmit="FormEdit.submit(event)">
+                                <div class="modal-body">
+                                    <div class="mb-2">
+                                        <label class="form-label" for="editDescription"> Descrição</label>
+                                        <input class="form-control" type="text" id="editDescription" name="description" />
+                                    </div>
+        
+                                    <div class="row mb-2">
+                                        <div class="col-md-6">
+                                            <label class="form-label" for="editCategory"> Categoria</label>
+                                            <select class="form-select" name="category" id="editCategory">
+                                                <option value="">Selecione</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label" for="editSubcategory"> Subcategoria</label>
+                                            <select class="form-select" name="subcategory" id="editSubcategory">
+                                                <option value="">Selecione</option>
+                                            </select>
+                                        </div>
+                                    </div>
+        
+                                    <div class="row mb-2">
+                                        <div class="col-md-4">
+                                            <label class="form-label" for="editTransactionType"> Tipo Transação</label>
+                                            <select class="form-select" name="transactionType" id="editTransactionType">
+                                                <option value="">Selecione</option>
+                                                <option value="receita">Receita</option>
+                                                <option value="despesa">Despesa</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label" for="editAmount"> Valor</label>
+                                            <input class="form-control" type="number" step="0.01" id="editAmount" name="amount"
+                                                placeholder="0,00" />
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label" for="editDate"> Data</label>
+                                            <input class="form-control" type="date" id="editDate" name="date" placeholder="Data" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button id="dismissButton" type="button" class="btn btn-sm btn-secondary"
+                                        data-bs-dismiss="modal">Cancelar</button>
+                                    <input type="hidden" name="transaction_id" id="editTransactionId">
+                                    <button type="submit" class="btn btn-sm btn-primary">Salvar</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+        
+                <div class="modal fade" id="modal-delete" tabindex="-1" aria-labelledby="modalDeleteLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <h5>Confirma a exclusão do lançamento?</h5>
+                            </div>
+                            <div class="modal-footer">
+                                <button id="dismissButton" type="button" class="btn btn-sm btn-secondary"
+                                    data-bs-dismiss="modal">Cancelar</button>
+                                <button type="button" id="btn-confirm-delete" class="btn btn-sm btn-primary">Confirmar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        
+                <div class="modal modal fade" id="modal-import" tabindex="-1" aria-labelledby="modalImportLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h2 class="modal-title fs-5" id="modalImportLabel">Importar Arquivo</h2>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <form enctype="multipart/form-data" onsubmit="FormImport.submit(event)">
+                                <div class="modal-body">
+                                    <div class="row mb-2">
+                                        <div class="col-md">
+                                            <label class="form-label" for="importType"> Tipo extrato</label>
+                                            <select class="form-select" name="importType" id="importType">
+                                                <option value="">Selecione</option>
+                                                <option value="conta">Conta corrente</option>
+                                                <option value="cartao">Cartão de crédito</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md">
+                                        <label class="form-label" for="importFile"> Arquivo</label>
+                                        <input class="form-control" type="file" id="importFile" name="importFile" />
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button id="dismissButton" type="button" class="btn btn-sm btn-secondary"
+                                        data-bs-dismiss="modal">Cancelar</button>
+                                    <button type="submit" class="btn btn-sm btn-primary">Importar</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <!-- Vendor js -->
+    <script src="{{ url_for('static', filename='assets/js/vendor.min.js') }}"></script>
+
+    <!-- Chart js -->
+    <script src="{{ url_for('static', filename='assets/vendor/chart.js/chart.min.js') }}"></script>
+
+    <!-- Projects Analytics Dashboard App js -->
+    <script src="{{ url_for('static', filename='assets/js/pages/demo.dashboard-projects.js') }}"></script>
+
+    <!-- App js -->
+    <script src="{{ url_for('static', filename='assets/js/app.min.js') }}"></script>
+
+    <!-- Sweetalert-->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- OWN JS-->
+    <script src="{{ url_for('static', filename='assets/js/scripts.js') }}"></script>
+{% endblock %}

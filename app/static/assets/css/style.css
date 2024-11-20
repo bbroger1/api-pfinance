@@ -1,0 +1,70 @@
+/* Global ====================================================*/
+:root {
+	--dark-blue: #363f5f;
+	--green: #49aa26;
+	--lightgreen: #3dd705;
+	--red: #e92929;
+}
+
+/* usado para leitores de tela */
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border-width: 0;
+}
+
+/* Balance =======================================================*/
+#balance {
+	margin-top: -8rem;
+}
+
+#balance h2 {
+	color: white;
+	margin-top: 0;
+}
+
+/* Cards =======================================================*/
+.card {
+	background: white;
+	padding: 1.5rem 2rem;
+	border-radius: 0.25rem;
+	margin-bottom: 2rem;
+	color: var(--dark-blue);
+}
+
+.card h3 {
+	font-weight: normal;
+	font-size: 1rem;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.card p {
+	font-size: 2rem;
+	line-height: 3rem;
+	margin-top: 1rem;
+}
+
+.card.total {
+	color: white;
+}
+
+/* Responsive =======================================================*/
+@media (min-width: 800px) {
+	html {
+		font-size: 87.5%;
+	}
+
+	#balance {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 2rem;
+	}
+}
