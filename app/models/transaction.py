@@ -1,23 +1,24 @@
-from ..database import db
-from sqlalchemy import Date
 from typing import Optional
+from ..database import db
+from sqlalchemy import Date, DateTime, Integer, String
+from datetime import datetime, date
 import datetime
 
 
 class Transaction(db.Model):
-    __tablename__ = "transaction"
+    __tablename__ = "transactions"
 
     id = db.Column(db.Integer, primary_key=True)
-    description = db.Column(db.String(255), nullable=False)
-    category_id = db.Column(db.Integer, db.ForeignKey("categories.id"), nullable=False)
+    description = db.Column(String(255), nullable=False)
+    category_id = db.Column(Integer, db.ForeignKey("categories.id"), nullable=False)
     subcategory_id = db.Column(
         db.Integer, db.ForeignKey("subcategories.id"), nullable=False
     )
-    transaction_type = db.Column(db.String(100), nullable=False)
-    amount = db.Column(db.Numeric(10, 2), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.datetime.now())
-    transaction_date = db.Column(db.Date, nullable=False)
-    transaction_date: Optional[Date]
+    transaction_type: str = db.Column(String(100), nullable=False)
+    amount: float = db.Column(db.Numeric(10, 2), nullable=False)
+    created_at = db.Column(DateTime, default=datetime.datetime.now())
+    transaction_date = db.Column(Date, nullable=False)
+   
 
     # Define relationships
     category = db.relationship(
@@ -66,3 +67,5 @@ class Transaction(db.Model):
             "created_at": self.created_at,
             "transaction_date": self.transaction_date,
         }
+    
+    

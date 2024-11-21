@@ -32,46 +32,32 @@
             </div>
             <!-- end page title -->
 
-            <div class="row">
-                <div class="col-12">
-                    <div class="card widget-inline">
-                        <div class="card-body p-0">
-                            <div class="row g-0">
-                                <div class="col-sm-4 col-lg-4">
-                                    <div class="card rounded-0 shadow-none m-0">
-                                        <div class="card-body text-center">
-                                            <i class="ri-briefcase-line text-muted font-24"></i>
-                                            <h3><span>29</span></h3>
-                                            <p class="text-muted font-15 mb-0">Receitas</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="col-sm-4 col-lg-4">
-                                    <div class="card rounded-0 shadow-none m-0 border-start border-light">
-                                        <div class="card-body text-center">
-                                            <i class="ri-focus-2-line text-muted font-24"></i>
-                                            <h3><span>31</span></h3>
-                                            <p class="text-muted font-15 mb-0">Despesas</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="col-sm-4 col-lg-4">
-                                    <div class="card rounded-0 shadow-none m-0 border-start border-light">
-                                        <div class="card-body text-center">
-                                            <i class="uil-clipboard-alt text-muted font-24"></i>
-                                            <h3><span>715</span></h3>
-                                            <p class="text-muted font-15 mb-0">Saldo</p>
-                                        </div>
-                                    </div>
-                                </div>                                
-                            </div> <!-- end row -->
-                        </div>
-                    </div> <!-- end card-box-->
-                </div> <!-- end col-->
-            </div>
-            <!-- end row-->
+            <!-- balance -->
+            <section class="mt-1" id="balance">
+                <h2 class="sr-only">Extrato</h2>
+                <div class="card shadow">
+                    <h3>
+                        <span>Receitas</span>
+                        <img src="{{ url_for('static', filename='assets/images/income.svg') }}" alt="Receitas">
+                    </h3>
+                    <p>{{ balance.income }}</p>
+                </div>
+                <div class="card shadow">
+                    <h3>
+                        <span>Despesas</span>
+                        <img src="{{ url_for('static', filename='assets/images/expense.svg') }}" alt="Despesas">
+                    </h3>
+                    <p>{{ balance.expense }}</p>
+                </div>
+                <div class="card shadow" style="{{ balance.style }}">
+                    <h3>
+                        <span>Saldo</span>
+                        <img src="{{ url_for('static', filename='assets/images/total.svg') }}" alt="Saldo">
+                    </h3>
+                    <p>{{ balance.balance }} </p>
+                </div>
+            </section>
+            <!-- end balance-->
 
             <!-- Gráfico últimos 12 meses-->
             <div class="row">
@@ -229,8 +215,11 @@
 <script src="{{ url_for('static', filename='assets/vendor/chart.js/chart.min.js') }}"></script>
 
 <!-- Projects Analytics Dashboard App js -->
-<script src="{{ url_for('static', filename='assets/js/pages/demo.dashboard-projects.js') }}"></script>
+<!-- <script src="{{ url_for('static', filename='assets/js/pages/demo.dashboard-projects.js') }}"></script> -->
 
 <!-- App js -->
 <script src="{{ url_for('static', filename='assets/js/app.min.js') }}"></script>
+
+<!-- OWN js -->
+<script src="{{ url_for('static', filename='assets/js/scripts.js') }}"></script>
 {% endblock %}

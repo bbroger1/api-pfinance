@@ -1,7 +1,144 @@
+from flask import jsonify
+from operator import is_not
 from app.models import Transaction, Category, SubCategory
-from sqlalchemy import extract, Date, cast, desc, String
+from sqlalchemy import extract, Date, cast, desc, func, and_, case
+from sqlalchemy.exc import OperationalError
+from datetime import datetime, timedelta
 from ..database import db
 
+def get_balance():
+    try:
+        # Define o intervalo de 12 meses
+        end_date = datetime.now().date()
+        start_date = end_date - timedelta(days=365)
+
+        # Query para calcular receitas, despesas e saldo
+        results = (Transaction.query
+                    .filter(
+                        and_(
+                            Transaction.transaction_date >= start_date, # type: ignore
+                            Transaction.transaction_date <= end_date, # type: ignore
+                            Transaction.transaction_date.is_not(None) # type: ignore
+                        )
+                    )
+                    .with_entities(
+                        func.sum(
+                            case(
+                                (Transaction.transaction_type == 'receita', Transaction.amount),  # Condição para receita # type: ignore
+                                else_=0  # Valor padrão se não for receita
+                            )
+                        ).label('total_receitas'), # type: ignore
+                        func.sum(
+                            case(
+                                (Transaction.transaction_type == 'despesa', Transaction.amount),  # Condição para despesa # type: ignore
+                                else_=0  # Valor padrão se não for despesa
+                            )
+                        ).label('total_despesas') # type: ignore
+                    )
+                    .first()
+                    )
+
+        if not results:            
+            return None
+        
+        total_receitas, total_despesas = results
+        saldo = total_receitas - total_despesas
+
+        if saldo < 0:
+            style= "background-color: red; color: white;"
+        else:
+            style= "background-color: #0eaec4; color: var(--dark-blue);"
+
+        return {
+                'income': format_currency(total_receitas) or 0,
+                'expense': format_currency(total_despesas) or 0,
+                'balance': format_currency(saldo),
+                'style': style
+            }
+
+    except Exception as error:
+        print("Error get_balance: ", error)
+        return None
+
+def get_balance_grafhic():
+    try:
+        end_date = datetime.now().date()
+        start_date = end_date - timedelta(days=365)
+
+        # Consulta para obter total de receitas e despesas nos últimos 12 meses
+        resultados = (Transaction.query
+                .filter(
+                    and_(
+                        Transaction.transaction_date >= start_date,
+                        Transaction.transaction_date <= end_date,
+                        Transaction.transaction_date.is_not(None)
+                    )
+                )
+                .with_entities(
+                    func.date_trunc('month', Transaction.transaction_date).label('mes'), 
+                    func.sum(
+                        case(
+                            (Transaction.transaction_type == 'receita', Transaction.amount),
+                            else_=0
+                        )
+                    ).label('total_receitas'),
+                    func.sum(
+                        case(
+                            (Transaction.transaction_type == 'despesa', Transaction.amount),
+                            else_=0
+                        )
+                    ).label('total_despesas')
+                )
+                .group_by(func.date_trunc('month', Transaction.transaction_date))
+                .order_by(func.date_trunc('month', Transaction.transaction_date))
+                .all()
+        )
+
+        # Preparar os dados para o gráfico
+        meses = []
+        receitas = []
+        despesas = []
+
+        # Criar um dicionário para mapear os meses e suas receitas e despesas
+        for resultado in resultados:
+            mes, total_receitas, total_despesas = resultado
+            # Formatação do mês para português
+            meses.append(mes.strftime("%B %Y").replace("January", "Janeiro").replace("February", "Fevereiro").replace("March", "Março")
+                         .replace("April", "Abril").replace("May", "Maio").replace("June", "Junho")
+                         .replace("July", "Julho").replace("August", "Agosto").replace("September", "Setembro")
+                         .replace("October", "Outubro").replace("November", "Novembro").replace("December", "Dezembro"))
+            receitas.append(total_receitas if total_receitas else 0)
+            despesas.append(total_despesas if total_despesas else 0)
+
+        # Meses em português
+        meses_portugues = [
+            "Dezembro 2023", "Janeiro 2024", "Fevereiro 2024", 
+            "Março 2024", "Abril 2024", "Maio 2024", 
+            "Junho 2024", "Julho 2024", "Agosto 2024", 
+            "Setembro 2024", "Outubro 2024", "Novembro 2024"
+        ]
+
+        # Alinhando os dados corretamente
+        final_receitas = [0] * 12
+        final_despesas = [0] * 12
+
+        for i, mes in enumerate(meses_portugues):
+            if mes in meses:
+                index = meses.index(mes)
+                final_receitas[i] = receitas[index] / 100  # Dividir por 100
+                final_despesas[i] = despesas[index] / 100  # Dividir por 100
+            else:
+                final_despesas[i] = 0
+
+        return {
+            "meses": meses_portugues,
+            "receitas": final_receitas,
+            "despesas": final_despesas
+        }
+
+    except Exception as e:
+        print("Error get_balance_grafhic: ", e)
+        return {"error": str(e)}
 
 def get_categories():
     try:
@@ -11,7 +148,6 @@ def get_categories():
         print("Error get_transactions: ", error)
         return None
 
-
 def get_subCategories(category_id):
     try:
         subcategories = SubCategory.query.filter_by(category_id=category_id).order_by(SubCategory.name).all()
@@ -20,14 +156,13 @@ def get_subCategories(category_id):
         print("Error get_transctions: ", error)
         return None
 
-
 def get_transactions(year, month):
     try:
         transactions = (
-            Transaction.query.order_by(desc(cast(Transaction.transaction_date, Date)))
+            Transaction.query.order_by(desc(cast(Transaction.transaction_date, Date))) # type: ignore
             .filter(
-                extract("year", cast(Transaction.transaction_date, Date)) == year,
-                extract("month", cast(Transaction.transaction_date, Date)) == month,
+                extract("year", cast(Transaction.transaction_date, Date)) == year, # type: ignore
+                extract("month", cast(Transaction.transaction_date, Date)) == month, # type: ignore
             )
             .all()
         )
@@ -36,21 +171,19 @@ def get_transactions(year, month):
         print("Error get_transactions: ", error)
         return None
 
-
 def get_all_transactions():
     try:
         transactions = Transaction.query.order_by(
-            desc(cast(Transaction.transaction_date, Date))
+            desc(cast(Transaction.transaction_date, Date)) # type: ignore
         ).all()
         return transactions
     except Exception as error:
         print("Error get_all_transactions: ", error)
         return None
 
-
 def filter_transactions_controller(filters):
     try:
-        query = Transaction.query.order_by(desc(cast(Transaction.transaction_date, Date)))
+        query = Transaction.query.order_by(desc(cast(Transaction.transaction_date, Date))) # type: ignore
 
         if filters:
             if "category_id" in filters:
@@ -61,11 +194,11 @@ def filter_transactions_controller(filters):
                 query = query.filter_by(transaction_type=filters["transaction_type"])
             if "year" in filters:
                 query = query.filter(
-                    extract('year', cast(Transaction.transaction_date, Date)) == filters["year"]
+                    extract('year', cast(Transaction.transaction_date, Date)) == filters["year"] # type: ignore
                 )
             if "month" in filters:
                 query = query.filter(
-                    extract('month', cast(Transaction.transaction_date, Date)) == filters["month"]
+                    extract('month', cast(Transaction.transaction_date, Date)) == filters["month"] # type: ignore
                 )
 
         transactions = query.all()
@@ -73,7 +206,6 @@ def filter_transactions_controller(filters):
     except Exception as error:
         print("Error filter_transactions: ", error)
         return None
-
 
 def save_transaction_controller(transaction_data):
     try:
@@ -86,7 +218,6 @@ def save_transaction_controller(transaction_data):
         print("Error save_transctions: ", error)
         return None
 
-
 def save_transaction_file_controller(transaction_data):
     try:
         db.session.add(transaction_data)
@@ -96,7 +227,6 @@ def save_transaction_file_controller(transaction_data):
     except Exception as error:
         print("Error save_transactions: ", error)
         return None
-
 
 def delete_transaction_controller(id):
     try:
@@ -111,7 +241,6 @@ def delete_transaction_controller(id):
         print("Error delete_transction: ", error)
         return False
 
-
 def get_transaction_controller(id):
     try:
         transaction = Transaction.query.get(id)
@@ -119,7 +248,6 @@ def get_transaction_controller(id):
     except Exception as error:
         print("Error get_transction: ", error)
         return None
-
 
 def update_transaction_controller(transaction_data):
     try:
@@ -141,3 +269,16 @@ def update_transaction_controller(transaction_data):
     except Exception as error:
         print("Error update_transaction: ", error)
         return False
+
+def format_currency(value: float) -> str:
+    # Divide o valor por 100 para converter de centavos para reais
+    value /= 100
+
+    # Formata o valor com separadores de milhar e decimal
+    formatted_value = f"{abs(value):,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+
+    # Adiciona o sinal negativo se o valor for negativo
+    if value < 0:
+        return f"- R$ {formatted_value}"
+    
+    return f"R$ {formatted_value}"

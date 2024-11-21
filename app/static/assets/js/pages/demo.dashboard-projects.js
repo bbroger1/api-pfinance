@@ -28,40 +28,42 @@
 				0 < o("#task-area-chart").length &&
 					((t = {
 						labels: [
-							"Sprint 1",
-							"Sprint 2",
-							"Sprint 3",
-							"Sprint 4",
-							"Sprint 5",
-							"Sprint 6",
-							"Sprint 7",
-							"Sprint 8",
-							"Sprint 9",
-							"Sprint 10",
-							"Sprint 11",
-							"Sprint 12",
-							"Sprint 13",
-							"Sprint 14",
-							"Sprint 15",
-							"Sprint 16",
-							"Sprint 17",
-							"Sprint 18",
-							"Sprint 19",
-							"Sprint 20",
-							"Sprint 21",
-							"Sprint 22",
-							"Sprint 23",
-							"Sprint 24",
+							"Janeiro",
+							"Fevereiro",
+							"Março",
+							"Abril",
+							"Maio",
+							"Junho",
+							"Julho",
+							"Agosto",
+							"Setembro",
+							"Outubro",
+							"Novembro",
+							"Dezembro"							
 						],
 						datasets: [
 							{
-								label: "This year",
+								label: "Receita",
 								backgroundColor:
-									o("#task-area-chart").data("bgcolor") ||
+									o("#income").data("bgcolor") ||
 									"#727cf5",
 								borderColor:
-									o("#task-area-chart").data("bordercolor") ||
+									o("#income").data("bordercolor") ||
 									"#727cf5",
+								data: [
+									16, 44, 32, 48, 72, 60, 84, 64, 78, 50, 68,
+									34, 26, 44, 32, 48, 72, 60, 74, 52, 62, 50,
+									32, 22,
+								],
+							},
+							{
+								label: "Despesa",
+								backgroundColor:
+									o("#expense").data("bgcolor") ||
+									"red",
+								borderColor:
+									o("#expense").data("bordercolor") ||
+									"red",
 								data: [
 									16, 44, 32, 48, 72, 60, 84, 64, 78, 50, 68,
 									34, 26, 44, 32, 48, 72, 60, 74, 52, 62, 50,

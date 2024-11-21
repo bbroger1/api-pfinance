@@ -9,9 +9,7 @@
 
     <!-- Icons css -->
     <link href="{{ url_for('static', filename='assets/css/icons.min.css') }}" rel="stylesheet" type="text/css">
-
-    <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/style.css') }}">
-{% endblock %}
+{% endblock %} 
 
 {% block content %}
     <div class="content-page">
@@ -33,7 +31,7 @@
                 <!-- end page title -->
 
                 <section class="mt-1" id="balance">
-                    <h2 class="sr-only">Balanço</h2>
+                    <h2 class="sr-only">Extrato</h2>
                     <div class="card shadow">
                         <h3>
                             <span>Receitas</span>
@@ -44,18 +42,18 @@
                     <div class="card shadow">
                         <h3>
                             <span>Despesas</span>
-                            <img src="{{ url_for('static', filename='/assets/images/expense.svg') }}" alt="Despesas">
+                            <img src="{{ url_for('static', filename='assets/images/expense.svg') }}" alt="Despesas">
                         </h3>
                         <p id="expenseDisplay"></p>
                     </div>
                     <div class="card total shadow" id="total">
                         <h3>
                             <span>Saldo</span>
-                            <img src="{{ url_for('static', filename='/assets/images/total.svg') }}" alt="Saldo">
+                            <img src="{{ url_for('static', filename='assets/images/total.svg') }}" alt="Saldo">
                         </h3>
                         <p id="totalDisplay"></p>
                     </div>
-                </section>
+                </section> 
 
                 <section id="transaction">
                     <div>
@@ -100,14 +98,14 @@
                                 Importar CSV
                             </button>
                             <a href="/transactions-all.html" class="btn btn-sm btn-outline-info">
-                                Ver tudo
+                                Todos
                             </a>
                         </div>
                     </div>
 
                     <div class="table-responsive">
                         <input type="hidden" id="page" name="page" value="1">
-                        <table class="table table-sm table-hover" id="data-table">
+                        <table class="table table-sm table-responsive table-hover" id="data-table">
                             <thead>
                                 <tr>
                                     <th>Data</th>

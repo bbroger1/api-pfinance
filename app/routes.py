@@ -3,6 +3,7 @@ from flask_wtf.csrf import generate_csrf
 from werkzeug.utils import secure_filename
 import datetime, csv, os, json, traceback, decimal
 from config import Config
+from datetime import datetime
 
 from .controllers.transaction_controller import *
 
@@ -10,13 +11,28 @@ main = Blueprint("main", __name__)
 
 @main.route("/")
 def index():
-    return render_template("index.html")
+    balance = get_balance()
+    return render_template("index.html", balance=balance)
+
+@main.route("/balance-grafhic", methods=["GET"])
+def balanceGrafhic():
+    try:
+        balance_grafhic = get_balance_grafhic()
+        return response_json("success", "dados para o gráfico", balance_grafhic)
+    except Exception as error:
+        print("Error: ", error)
+        message = "Dados para o gráfico não puderam ser recuperados"
+        return response_json("error", message, data=None)
 
 @main.route("/balance")
 def balance():
     return render_template("balance.html")
 
-@main.route("/pfinance/categories", methods=["POST"])
+@main.route("/balance-total")
+def balance_total():
+    return render_template("balance-total.html")
+
+@main.route("/categories", methods=["POST"])
 def list_categories():
     try:
         categories = get_categories()
@@ -26,7 +42,7 @@ def list_categories():
         message = "Lista de categorias não pode ser recuperada"
         return response_json("error", message, data=None)
 
-@main.route("/pfinance/subcategories/<int:category_id>", methods=["POST"])
+@main.route("/subcategories/<int:category_id>", methods=["POST"])
 def list_subCategories(category_id):
     try:
         subCategories = get_subCategories(category_id)
@@ -36,7 +52,7 @@ def list_subCategories(category_id):
         message = "Lista de subcategorias não pode ser recuperada"
         return response_json("error", message, data=None)
 
-@main.route("/pfinance/transactions", methods=["POST"])
+@main.route("/transactions", methods=["POST"])
 def list_transactions():
     try:
         currentYear = datetime.datetime.now().year
@@ -56,7 +72,7 @@ def list_transactions():
             "error", "Lista de transações não pode ser recuperada", data=None
         )
 
-@main.route("/pfinance/transactions-all", methods=["POST"])
+@main.route("/transactions-all", methods=["POST"])
 def list_all_transactions():
     try:
         result = get_all_transactions()
@@ -74,7 +90,7 @@ def list_all_transactions():
             "error", "Lista de transações não pode ser recuperada", data=None
         )
 
-@main.route("/pfinance/transactions/filter", methods=["POST"])
+@main.route("/transactions/filter", methods=["POST"])
 def filter_transactions():
     try:
         year = request.form.get("year")
@@ -97,7 +113,7 @@ def filter_transactions():
         message = "Lista de transações não pode ser recuperada"
         return response_json("error", message, data=None)
     
-@main.route("/pfinance/transactions/insert", methods=["POST"])
+@main.route("/transactions/insert", methods=["POST"])
 def save_transaction():
     try:
         transaction_data = request.get_json()
@@ -111,7 +127,7 @@ def save_transaction():
             "error", "Transação não pode ser registrada.[2]", data=None
         )
 
-@main.route("/pfinance/transactions/<int:id>", methods=["POST"])
+@main.route("/transactions/<int:id>", methods=["POST"])
 def get_transaction(id):
     try:
         transaction = ""
@@ -124,7 +140,7 @@ def get_transaction(id):
         print("Error: ", error)
         return response_json("error", "Transação não pode ser recuperada.", data=None)
 
-@main.route("/pfinance/transactions/update", methods=["POST"])
+@main.route("/transactions/update", methods=["POST"])
 def update_transaction():
     try:
         transaction_data = request.get_json()
@@ -134,7 +150,7 @@ def update_transaction():
         print("Error: ", error)
         return response_json("error", "Transação não pode ser editada", data=None)
 
-@main.route("/pfinance/transactions/delete/<int:id>", methods=["POST"])
+@main.route("/transactions/delete/<int:id>", methods=["POST"])
 def delete_transaction(id):
     try:
         delete = delete_transaction_controller(id)
@@ -145,7 +161,7 @@ def delete_transaction(id):
         print("Error delete: ", error)
         return response_json("error", "Transação não pode ser excluída [2]", "")
 
-@main.route("/pfinance/transactions/import", methods=["POST"])
+@main.route("/transactions/import", methods=["POST"])
 def import_transaction():
     try:
         type_import = request.form.get("type")
@@ -163,7 +179,7 @@ def import_transaction():
         print(f"Error: {error}")
         return response_json("error", "Importação não pode ser realizada [2]", "")
 
-@main.route("/pfinance/generate_token", methods=["GET"])
+@main.route("/generate_token", methods=["GET"])
 def get_csrf_token():
     csrf_token = generate_csrf()
     return response_json("success", "Token gerado com sucesso", csrf_token)
