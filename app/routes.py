@@ -12,7 +12,8 @@ main = Blueprint("main", __name__)
 @main.route("/")
 def index():
     balance = get_balance()
-    return render_template("index.html", balance=balance)
+    balance_detail = get_balance_detail()
+    return render_template("index.html", balance=balance, detail=balance_detail)
 
 @main.route("/balance-grafhic", methods=["GET"])
 def balanceGrafhic():

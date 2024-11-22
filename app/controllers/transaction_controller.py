@@ -69,28 +69,28 @@ def get_balance_grafhic():
         resultados = (Transaction.query
                 .filter(
                     and_(
-                        Transaction.transaction_date >= start_date,
-                        Transaction.transaction_date <= end_date,
-                        Transaction.transaction_date.is_not(None)
+                        Transaction.transaction_date >= start_date, # type: ignore
+                        Transaction.transaction_date <= end_date, # type: ignore
+                        Transaction.transaction_date.is_not(None) # type: ignore
                     )
                 )
                 .with_entities(
-                    func.date_trunc('month', Transaction.transaction_date).label('mes'), 
+                    func.date_trunc('month', Transaction.transaction_date).label('mes'),  # type: ignore
                     func.sum(
                         case(
-                            (Transaction.transaction_type == 'receita', Transaction.amount),
+                            (Transaction.transaction_type == 'receita', Transaction.amount), # type: ignore
                             else_=0
                         )
-                    ).label('total_receitas'),
+                    ).label('total_receitas'), # type: ignore
                     func.sum(
                         case(
-                            (Transaction.transaction_type == 'despesa', Transaction.amount),
+                            (Transaction.transaction_type == 'despesa', Transaction.amount), # type: ignore
                             else_=0
                         )
-                    ).label('total_despesas')
+                    ).label('total_despesas') # type: ignore
                 )
-                .group_by(func.date_trunc('month', Transaction.transaction_date))
-                .order_by(func.date_trunc('month', Transaction.transaction_date))
+                .group_by(func.date_trunc('month', Transaction.transaction_date)) # type: ignore
+                .order_by(func.date_trunc('month', Transaction.transaction_date)) # type: ignore
                 .all()
         )
 
@@ -139,6 +139,86 @@ def get_balance_grafhic():
     except Exception as e:
         print("Error get_balance_grafhic: ", e)
         return {"error": str(e)}
+
+def get_balance_detail():
+    try:
+        end_date = datetime.now().date()
+        start_date = end_date - timedelta(days=365)
+        transactions = Transaction.query.all()
+
+        income_dict = {}
+        expense_dict = {}
+
+        for transaction in transactions:
+            if start_date <= transaction.transaction_date <= end_date:
+                category_id = transaction.category_id
+                subcategory_id = transaction.subcategory_id
+                
+                if transaction.transaction_type == 'receita':
+                    if category_id not in income_dict:
+                        income_dict[category_id] = {
+                            'name': transaction.category.name,
+                            'amount': 0,
+                            'subcategories': {}
+                        }
+                    income_dict[category_id]['amount'] += transaction.amount
+
+                    if subcategory_id not in income_dict[category_id]['subcategories']:
+                        income_dict[category_id]['subcategories'][subcategory_id] = {
+                            'name': transaction.subcategory.name,
+                            'amount': 0,
+                        }
+                    income_dict[category_id]['subcategories'][subcategory_id]['amount'] += transaction.amount
+
+                elif transaction.transaction_type == 'despesa':
+                    if category_id not in expense_dict:
+                        expense_dict[category_id] = {
+                            'name': transaction.category.name,
+                            'amount': 0,
+                            'subcategories': {}
+                        }
+                    expense_dict[category_id]['amount'] += transaction.amount
+
+                    if subcategory_id not in expense_dict[category_id]['subcategories']:
+                        expense_dict[category_id]['subcategories'][subcategory_id] = {
+                            'name': transaction.subcategory.name,
+                            'amount': 0,
+                        }
+                    expense_dict[category_id]['subcategories'][subcategory_id]['amount'] += transaction.amount
+
+        # Ordena as categorias por amount do maior para o menor
+        sorted_incomes = sorted(income_dict.items(), key=lambda item: item[1]['amount'], reverse=True)
+        sorted_expenses = sorted(expense_dict.items(), key=lambda item: item[1]['amount'], reverse=True)
+
+        # Formata os totais e ordena as subcategorias
+        for category in income_dict.values():
+            # Ordena as subcategorias do maior para o menor
+            sorted_subcategories = sorted(category['subcategories'].items(), key=lambda item: item[1]['amount'], reverse=True)
+            category['subcategories'] = {k: v for k, v in sorted_subcategories}
+            # Formata o total da categoria
+            category['amount'] = format_currency(category['amount'])
+            # Formata os valores das subcategorias
+            for subcategory in category['subcategories'].values():
+                subcategory['amount'] = format_currency(subcategory['amount'])
+
+        for category in expense_dict.values():
+            # Ordena as subcategorias do maior para o menor
+            sorted_subcategories = sorted(category['subcategories'].items(), key=lambda item: item[1]['amount'], reverse=True)
+            category['subcategories'] = {k: v for k, v in sorted_subcategories}
+            # Formata o total da categoria
+            category['amount'] = format_currency(category['amount'])
+            # Formata os valores das subcategorias
+            for subcategory in category['subcategories'].values():
+                subcategory['amount'] = format_currency(subcategory['amount'])
+
+        return {
+            'incomes': dict(sorted_incomes),
+            'expenses': dict(sorted_expenses)
+        }
+
+    except Exception as error:
+        print("Error get_balance: ", error)
+        return None
 
 def get_categories():
     try:
