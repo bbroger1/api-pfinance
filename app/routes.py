@@ -15,6 +15,17 @@ def index():
     balance_detail = get_balance_detail()
     return render_template("index.html", balance=balance, detail=balance_detail)
 
+@main.route("/get-dashboard", methods=["POST"])
+def get_dashboard():
+    try:
+        balance = get_balance()
+        balance_detail = get_balance_detail()
+        return response_json("success", "dados para o gráfico", [balance, balance_detail])
+    except Exception as error:
+        print("Error: ", error)
+        message = "Os dados não puderam ser recuperados"
+        return response_json("error", message, data=None)
+
 @main.route("/balance-grafhic", methods=["GET"])
 def balanceGrafhic():
     try:
@@ -56,8 +67,8 @@ def list_subCategories(category_id):
 @main.route("/transactions", methods=["POST"])
 def list_transactions():
     try:
-        currentYear = datetime.datetime.now().year
-        currentMonth = datetime.datetime.now().month
+        currentYear = datetime.now().year
+        currentMonth = 10 #datetime.now().month
         result = get_transactions(currentYear, currentMonth)
         transactions = []
 

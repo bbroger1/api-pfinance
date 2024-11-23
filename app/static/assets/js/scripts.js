@@ -1,3 +1,62 @@
+const API_BASE_URL = "http://127.0.0.1:5000";
+let csrfToken;
+
+// função que recupera os dados da index.html
+function getDashboard() {
+    try {
+        fetch(`${API_BASE_URL}/get-dashboard`, {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": csrfToken,
+            },
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.status === "success") {
+                    // Atualiza a URL e carrega o conteúdo da página index.html
+                    history.pushState(null, '', `${API_BASE_URL}`);
+                    loadPageContent('/'); // Função para carregar o conteúdo da nova página
+                } else {
+                    console.error("Error getDashboard [1]");
+                }
+            })
+            .catch((error) => {
+                console.error("Error getDashboard [2]: ", error);
+            });
+    } catch (error) {
+        console.error("Error getDashboard [3]:", error);
+    }
+}
+
+// função que recupera os dados da balance.html
+function getTransactions() {
+    try {
+        fetch(`${API_BASE_URL}/transactions`, {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": csrfToken,
+            },
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.status === "success") {
+                    console.log(data);
+                    // Atualiza a URL e carrega o conteúdo da página balance.html
+                    history.pushState(null, '', `${API_BASE_URL}/balance`);
+                    loadPageContent('/balance'); // Função para carregar o conteúdo da nova página
+                } else {
+                    console.error("Error getTransactions [1]");
+                }
+            })
+            .catch((error) => {
+                console.error("Error getTransactions [2]: ", error);
+            });
+    } catch (error) {
+        console.error("Error getTransactions [3]:", error);
+    }
+}
+
+// função para trazer os dados do gráfico
 function balanceGrafhic() {
     fetch('/balance-grafhic')
     .then(response => {
@@ -76,6 +135,48 @@ function balanceGrafhic() {
     });
 }
 
+// função para simular o spa carregando o conteudo das páginas
+function loadPageContent(page) {
+    fetch(page)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.text();
+        })
+        .then(html => {
+            // Cria um elemento temporário para extrair apenas o conteúdo do bloco 'content'
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = html;
+
+            // Seleciona apenas o conteúdo do bloco 'content'
+            const newContent = tempDiv.querySelector('.content-page').innerHTML;
+
+            // Atualiza o conteúdo da página
+            document.querySelector('#content').innerHTML = newContent;
+
+            if(page == "/"){
+                balanceGrafhic();
+            }
+        })
+        .catch(error => console.error("Error loading page content: ", error));
+}
+
+// buscar o token csrf
+function getCsrfToken() {
+	var metaCsrfToken = document.getElementById("csrfToken");
+	fetch(`${API_BASE_URL}/generate_token`)
+		.then((response) => response.json())
+		.then((data) => {
+			metaCsrfToken.setAttribute("content", data.data);
+            csrfToken = data.data
+		})
+		.catch((error) => {
+			console.error(error);
+		});
+}
+
 $(document).ready(function () {
-    balanceGrafhic()
+    getCsrfToken()
+    getDashboard()
 });

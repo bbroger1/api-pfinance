@@ -9,6 +9,10 @@ from .routes import main
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
+
+    # Inicializa o logging
+    Config.init_app(app)
+    
     CORS(app, origins=["*"], expose_headers=["Content-Type", "X-CSRFToken"])
     app.register_blueprint(main)
 

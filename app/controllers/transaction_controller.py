@@ -25,13 +25,13 @@ def get_balance():
                         func.sum(
                             case(
                                 (Transaction.transaction_type == 'receita', Transaction.amount),  # Condição para receita # type: ignore
-                                else_=0  # Valor padrão se não for receita
+                                else_=0
                             )
                         ).label('total_receitas'), # type: ignore
                         func.sum(
                             case(
                                 (Transaction.transaction_type == 'despesa', Transaction.amount),  # Condição para despesa # type: ignore
-                                else_=0  # Valor padrão se não for despesa
+                                else_=0
                             )
                         ).label('total_despesas') # type: ignore
                     )
