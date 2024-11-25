@@ -44,12 +44,19 @@ function getTransactions(year, month) {
         })
             .then((response) => response.json())
             .then((data) => {
-                if (data.status === "success") {
-                    console.log(data)                
+                if (data.status === "success") {           
                     // Atualiza os totais no resumo
                     document.getElementById('incomeDisplay').innerText = data.data.incomes;
                     document.getElementById('expenseDisplay').innerText = data.data.expenses;
                     document.getElementById('balanceDisplay').innerText = data.data.balance;
+
+                    if (data.data.balance.charAt(0) == "-"){
+                        document.getElementById('total').style.background = 'red';
+                        document.getElementById('total').style.color = 'white';
+                    } else {
+                        document.getElementById('total').style.background = '#0eaec4';
+                        document.getElementById('total').style.color = 'white';
+                    }
 
                     // Seta o ano e o mês
                     document.getElementById('selectYear').value = year
@@ -115,7 +122,7 @@ const Transaction = {
 			await fetch(`${API_BASE_URL}/transactions`, {
 				method: "POST",
 				headers: {
-					"X-CSRFToken": this.setCsrfToken(),
+					"X-CSRFToken": csrfToken,
 				},
 			})
 				.then((response) => response.json())
@@ -140,7 +147,7 @@ const Transaction = {
 			await fetch(`${API_BASE_URL}/transactions-all`, {
 				method: "POST",
 				headers: {
-					"X-CSRFToken": this.setCsrfToken(),
+					"X-CSRFToken": csrfToken,
 				},
 			})
 				.then((response) => response.json())
@@ -165,7 +172,7 @@ const Transaction = {
 			await fetch(`${API_BASE_URL}/transactions/filter`, {
 				method: "POST",
 				headers: {
-					"X-CSRFToken": this.setCsrfToken(),
+					"X-CSRFToken": csrfToken,
 				},
 				body: formData,
 			})
@@ -200,12 +207,9 @@ const Transaction = {
 			})
 				.then((response) => response.json())
 				.then((data) => {
-                    console.log(data)
 					if (data.status == "success") {
                         let year = transaction.transaction_date.getFullYear();
                         let month = transaction.transaction_date.getMonth() + 1;
-                        console.log(year)
-                        console.log(month)
                         getTransactions(year, month)                       
                         Form.clearFields();
 						closeModal("modal");                        
@@ -227,7 +231,7 @@ const Transaction = {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
-					"X-CSRFToken": this.setCsrfToken(),
+					"X-CSRFToken": csrfToken,
 				},
 				body: JSON.stringify(id),
 			})
@@ -254,7 +258,7 @@ const Transaction = {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
-					"X-CSRFToken": this.setCsrfToken(),
+					"X-CSRFToken": csrfToken,
 				},
 				body: JSON.stringify(transaction),
 			})
@@ -262,7 +266,8 @@ const Transaction = {
 				.then((data) => {
 					if (data.status == "success") {
 						closeModal("modal-edit");
-						DOM.updateTransactionInDOM(transaction);
+                        FormImport.clearFields();
+						
 					} else {
 						console.error("Error updating transaction:", response);
 					}
@@ -280,115 +285,25 @@ const Transaction = {
 			await fetch(`${API_BASE_URL}/transactions/import`, {
 				method: "POST",
 				headers: {
-					"X-CSRFToken": this.setCsrfToken(),
+					"X-CSRFToken": csrfToken,
 				},
 				body: formData,
 			})
 				.then((response) => response.json())
 				.then((data) => {
 					if (data.status == "success") {
+                        getTransactions(ANO_ATUAL, MES_ATUAL)
 						closeModal("modal-import");
-						App.reload();
 					} else {
-						console.error(
-							"Error importing transactions:",
-							data.message
+						console.error("Error importing transactions:", data.message
 						);
 					}
 				})
 				.catch((error) => {
-					console.error("Error importing transaction[2]:", error);
+					console.error("Error importing transactions [2]:", error);
 				});
 		} catch (error) {
-			console.error("Error importing transaction[3]:", error);
-		}
-	},
-};
-
-// Substituir os dados do HTML com os do JS
-const DOM = {
-	transactionsContainer: document.querySelector("#data-table tbody"),
-	transactionsContainerAll: document.querySelector("#data-table-all tbody"),
-
-	addTransaction(transaction) {		
-		const tr = document.createElement("tr");
-		tr.innerHTML = DOM.innerHTMLTransaction(transaction);
-		tr.id = transaction.id;
-
-		if (PAGE.value == 1) {
-			DOM.transactionsContainer.appendChild(tr);
-		} else {
-			DOM.transactionsContainerAll.appendChild(tr);
-		}
-	},
-
-	updateTransactionInDOM(transaction) {
-		const row = document.getElementById(`${transaction.id}`);
-		const transactionType = Utils.formatTransactionType(
-			transaction.transaction_acronym
-		);
-
-		const amount = Utils.formatCurrency(transaction.amount)
-
-		if (row) {
-			row.querySelector(".description").textContent = transaction.description;
-			row.querySelector(".category").textContent = transaction.category_name;
-			row.querySelector(".subcategory").textContent = transaction.subcategory_name;
-			row.querySelector(".transaction_type").innerHTML = transactionType;
-			row.querySelector(".amount").textContent = amount;
-		}
-	},
-
-	innerHTMLTransaction(transaction) {
-		const amount = Utils.formatCurrency(transaction.amount);
-		const transaction_date = Utils.formatDatetime(
-			transaction.transaction_date
-		);
-		const transactionType = Utils.formatTransactionType(
-			transaction.transaction_type
-		);
-
-		const html = `
-			<td class="date">${transaction_date}</td>
-			<td class="description">${transaction.description}</td>
-			<td class="category">${transaction.category}</td>
-			<td class="subcategory">${transaction.subcategory}</td>
-			<td class="text-center amount">${amount}</td>
-			<td class="text-center transaction_type">${transactionType}</td>
-			<td class="text-center">
-				<img src="./assets/img/editar.png" alt="Editar Transação" width="23" title="Editar" class="cursor-pointer" 
-					data-bs-toggle="modal" data-bs-target="#modal-edit" onclick="transactionEdit(${transaction.id})">
-				<img src="./assets/img/deletar.png" alt="Remover Transação" width="20" title="Excluir" class="cursor-pointer" 
-					data-bs-toggle="modal" data-bs-target="#modal-delete" onclick="transactionDelete(${transaction.id})">
-			</td>
-		`;
-
-		return html;
-	},
-
-	updateBalance() {
-		document.getElementById("incomeDisplay").innerHTML =
-			Utils.formatCurrency(Transaction.incomes());
-
-		document.getElementById("expenseDisplay").innerHTML =
-			Utils.formatCurrency(Transaction.expenses());
-
-		document.getElementById("totalDisplay").innerHTML =
-			Utils.formatCurrency(Transaction.total());
-
-		cardTotal = document.getElementById("total");
-		if (Transaction.total() < 0) {
-			cardTotal.style.backgroundColor = "red";
-		} else {
-			cardTotal.style.backgroundColor = "#0eaec4";
-		}
-	},
-
-	clearTransactions() {
-		if (PAGE.value == 1) {
-			DOM.transactionsContainer.innerHTML = "";
-		} else {
-			DOM.transactionsContainerAll.innerHTML = "";
+			console.error("Error importing transactions [3]:", error);
 		}
 	},
 };
@@ -433,10 +348,163 @@ function submitForm(event) {
         formData.forEach((value, key) => { dataObject[key] = value })
         Form.validateFields(dataObject);
         let transaction = Form.formatValues(dataObject)
-        console.log(transaction)
         Transaction.add(transaction);
     } catch (error) {
         alert(error);
+    }
+}
+
+const FormEdit = {
+	id: document.querySelector("input#editTransactionId"),
+	description: document.querySelector("input#editDescription"),
+	category: document.querySelector("select#editCategory"),
+	subcategory: document.querySelector("select#editSubcategory"),
+	transactionType: document.querySelector("select#editTransactionType"),
+	amount: document.querySelector("input#editAmount"),
+	date: document.querySelector("input#editDate"),
+
+	getValues() {
+		return {
+			id: FormEdit.id.value,
+			description: FormEdit.description.value,
+			category_id: FormEdit.category.value,
+			subcategory_id: FormEdit.subcategory.value,
+			transaction_type: FormEdit.transactionType.value,
+			amount: FormEdit.amount.value,
+			date: FormEdit.date.value,
+		};
+	},
+
+	validateFields() {
+		const {
+			description,
+			category_id,
+			subcategory_id,
+			transaction_type,
+			amount,
+			date,
+		} = FormEdit.getValues();
+
+		if (
+			description.trim() === "" ||
+			amount.trim() === "" ||
+			category_id.trim() === "" ||
+			subcategory_id.trim() === "" ||
+			transaction_type.trim() === "" ||
+			date.trim() === ""
+		) {
+			throw new Error("Por favor, Preencha os todos os campos");
+		}
+	},
+
+	formatValues() {
+		let {
+			id,
+			description,
+			category_id,
+			subcategory_id,
+			transaction_type,
+			amount,
+		} = FormEdit.getValues();
+
+		amount = Utils.formatAmount(amount);
+
+		const categoryName = FormEdit.category.options[FormEdit.category.selectedIndex].text;
+		const subcategoryName = FormEdit.subcategory.options[FormEdit.subcategory.selectedIndex].text;
+		let transaction_acronym = ''
+		if(transaction_type === "receita"){
+			transaction_acronym = 'R'
+		} else{
+			transaction_acronym = 'D'
+		}
+
+		return {
+			id,
+			description,
+			category_id,
+			category_name: categoryName,
+			subcategory_id,
+			subcategory_name: subcategoryName,
+			transaction_type,
+			transaction_acronym,
+			amount,
+		};
+	},
+
+	clearFields() {
+		FormEdit.description.value = "";
+		FormEdit.category.value = "";
+		FormEdit.subcategory.value = "";
+		FormEdit.transactionType.value = "";
+		FormEdit.amount.value = "";
+		FormEdit.date.value = "";
+	},
+
+	submit(event) {
+		event.preventDefault();
+
+		try {
+			FormEdit.validateFields();
+			const transaction = FormEdit.formatValues();
+			Transaction.update(transaction);
+			FormEdit.clearFields();
+		} catch (error) {
+			alert(error);
+		}
+	},
+};
+
+const FormImport = {
+	validateFields(type, file) {
+        if (type === "") {
+            throw new Error("Por favor, selecione um tipo de importação.");
+        }
+
+        if (!file) {
+            throw new Error("Por favor, selecione um arquivo.");
+        }
+
+        const validTypes = ['text/csv', 'application/vnd.ms-excel', 'text/plain'];
+        if (!validTypes.includes(file.type)) {
+            throw new Error("O arquivo deve ser um CSV.");
+        }
+
+        const maxSizeInBytes = 100 * 1024;
+        if (file.size > maxSizeInBytes) {
+            throw new Error("O tamanho do arquivo deve ser menor que 100 KB.");
+        }
+    },
+
+	clearFields() {
+		FormImport.type.value = "";
+		FormImport.file.value = "";
+	},
+};
+
+function submitFormImport(event) {
+    event.preventDefault();
+    console.log(event)
+    try {        
+        let type = document.getElementById("importType").value;
+        let fileInput = document.getElementById("importFile");
+        let file = fileInput.files[0];
+        console.log(type)
+        console.log(file)
+
+        if (!file) {
+            throw new Error("Por favor, selecione um arquivo [1].");
+        }
+        
+        const formData = new FormData();
+        formData.append("type", type);
+        formData.append("file", file);
+
+        // Validação dos campos
+        FormImport.validateFields(type, file);
+
+        Transaction.import(formData);			
+    } catch (error) {
+        alert("submitFormImport: " + error);
     }
 }
 
@@ -785,7 +853,6 @@ function loadPageContent(page) {
 
             // Atualiza o conteúdo da página
             document.querySelector('#content').innerHTML = newContent;
-            //console.log(page)
             if(page == "/"){
                 balanceGrafhic();
             } else if(page == "/balance"){

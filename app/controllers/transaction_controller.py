@@ -44,7 +44,7 @@ def get_balance():
         if saldo < 0:
             style= "background-color: red; color: white;"
         else:
-            style= "background-color: #0eaec4; color: var(--dark-blue);"
+            style= "background-color: #0eaec4; color: white;"
 
         return {
                 'income': format_currency(total_receitas) or 0,
