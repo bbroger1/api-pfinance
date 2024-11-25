@@ -1,8 +1,5 @@
-from flask import jsonify
-from operator import is_not
 from app.models import Transaction, Category, SubCategory
 from sqlalchemy import extract, Date, cast, desc, func, and_, case
-from sqlalchemy.exc import OperationalError
 from datetime import datetime, timedelta
 from ..database import db
 
@@ -238,15 +235,39 @@ def get_subCategories(category_id):
 
 def get_transactions(year, month):
     try:
-        transactions = (
-            Transaction.query.order_by(desc(cast(Transaction.transaction_date, Date))) # type: ignore
+        query = (
+            Transaction.query.order_by(desc(cast(Transaction.transaction_date, Date)))  # type: ignore
             .filter(
-                extract("year", cast(Transaction.transaction_date, Date)) == year, # type: ignore
-                extract("month", cast(Transaction.transaction_date, Date)) == month, # type: ignore
+                extract("year", cast(Transaction.transaction_date, Date)) == year,  # type: ignore
+                extract("month", cast(Transaction.transaction_date, Date)) == month,  # type: ignore
             )
             .all()
         )
-        return transactions
+
+        transactions = []
+        incomes = 0
+        expenses = 0
+
+        if query:
+            for item in query:
+                transaction_dict = item.to_dict()
+                transactions.append(transaction_dict)
+
+                # Supondo que você tenha um campo 'amount' em sua transação que indica o valor
+                if transaction_dict['transaction_type'] == 'receita':
+                    incomes += item.amount
+                elif transaction_dict['transaction_type'] == 'despesa':
+                    expenses += item.amount
+
+        balance = incomes - expenses
+
+        return {
+            'transactions': transactions,
+            'incomes': format_currency(incomes),
+            'expenses': format_currency(expenses),
+            'balance': format_currency(balance)
+        }
+
     except Exception as error:
         print("Error get_transactions: ", error)
         return None

@@ -28,6 +28,8 @@
                 </div>
             </div>
             <!-- end page title -->
+
+            <!-- start cards-->
             <section class="mt-1" id="balance">
                 <h2 class="sr-only">Extrato</h2>
                 <div class="card shadow">
@@ -49,18 +51,22 @@
                         <span>Saldo</span>
                         <img src="{{ url_for('static', filename='assets/images/total.svg') }}" alt="Saldo">
                     </h3>
-                    <p id="totalDisplay"></p>
+                    <p id="balanceDisplay"></p>
                 </div>
             </section> 
+            <!-- end cards-->
 
+            <!-- start transactions-->
             <section id="transaction">
                 <div>
                     <h2 class="sr-only">Transações</h2>
                 </div>
 
+                <!-- Filteres transactions -->
                 <div class="row mb-3">
+                    <!-- filter year -->
                     <div class="col-md-2 mb-2">
-                        <select class="form-select" name="selectYear" id="selectYear">
+                        <select class="form-select" name="selectYear" id="selectYear" onchange="transactionFilter()">
                             <option value="2024">2024</option>
                             <option value="2025">2025</option>
                             <option value="2026">2026</option>
@@ -68,9 +74,9 @@
                             <option value="2028">2028</option>
                         </select>
                     </div>
-
+                    <!-- filter month -->
                     <div class="col-md-2 mb-2">
-                        <select class="form-select" name="selectMonth" id="selectMonth">
+                        <select class="form-select" name="selectMonth" id="selectMonth" onchange="transactionFilter()">
                             <option value="1">Jan</option>
                             <option value="2">Fev</option>
                             <option value="3">Mar</option>
@@ -85,10 +91,10 @@
                             <option value="12">Dez</option>
                         </select>
                     </div>
-
+                    <!-- buttons - add new transaction and upload file -->
                     <div class="col-md-8 text-end mb-2">
                         <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modal"
-                            onclick="fillModal()">
+                            onclick="Modal.fillModal()">
                             + Nova Transação
                         </button>
                         <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal"
@@ -96,13 +102,14 @@
                             Importar CSV
                         </button>
                         <a href="/transactions-all.html" class="btn btn-sm btn-outline-info">
-                            Todos
+                            Extrato Anual
                         </a>
                     </div>
                 </div>
+                <!-- end filter -->
 
+                <!-- table transactions -->
                 <div class="table-responsive">
-                    <input type="hidden" id="page" name="page" value="1">
                     <table class="table table-sm table-responsive table-hover" id="data-table">
                         <thead>
                             <tr>
@@ -115,12 +122,13 @@
                                 <th class="text-center"></th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="transaction-list">
                         </tbody>
-
                     </table>
                 </div>
+                <!-- end table transactions -->
             </section>
+            <!-- end transactions-->
     
             <div class="modal modal-lg fade" id="modal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
                 <div class="modal-dialog">
@@ -129,7 +137,7 @@
                             <h2 class="modal-title fs-5" id="modalLabel">Incluir transação</h2>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
-                        <form id="form-modal" onsubmit="Form.submit(event)">
+                        <form id="form-modal" onsubmit="submitForm(event)">
                             <div class="modal-body">
                                 <div class="mb-2">
                                     <label class="form-label" for="description"> Descrição</label>
@@ -139,7 +147,7 @@
                                 <div class="row mb-2">
                                     <div class="col-md-6">
                                         <label class="form-label" for="category"> Categoria</label>
-                                        <select class="form-select" name="category" id="category">
+                                        <select class="form-select" name="category" id="category" onchange="Modal.updateSubcategories(this.value, 'subcategory')">
                                             <option value="">Selecione</option>
                                         </select>
                                     </div>
@@ -166,8 +174,8 @@
                                             placeholder="0,00" />
                                     </div>
                                     <div class="col-md-4">
-                                        <label class="form-label" for="date"> Data</label>
-                                        <input class="form-control" type="date" id="date" name="date" placeholder="Data" />
+                                        <label class="form-label" for="transactionDate"> Data</label>
+                                        <input class="form-control" type="date" id="transactionDate" name="transactionDate" placeholder="Data" />
                                     </div>
                                 </div>
                             </div>

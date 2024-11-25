@@ -20981,6 +20981,10 @@ span.flatpickr-weekday {
 	margin-top: 1rem;
 }
 
+.cursor-pointer {
+	cursor: pointer;
+}
+
 /* Responsive =======================================================*/
 @media (min-width: 800px) {
 	#balance {
@@ -20989,3 +20993,4 @@ span.flatpickr-weekday {
 		gap: 2rem;
 	}
 }
+

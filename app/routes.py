@@ -40,68 +40,18 @@ def balanceGrafhic():
 def balance():
     return render_template("balance.html")
 
-@main.route("/balance-total")
-def balance_total():
-    return render_template("balance-total.html")
-
-@main.route("/categories", methods=["POST"])
-def list_categories():
-    try:
-        categories = get_categories()
-        return response_json("success", "Lista de categorias", categories)
-    except Exception as error:
-        print("Error: ", error)
-        message = "Lista de categorias não pode ser recuperada"
-        return response_json("error", message, data=None)
-
-@main.route("/subcategories/<int:category_id>", methods=["POST"])
-def list_subCategories(category_id):
-    try:
-        subCategories = get_subCategories(category_id)
-        return response_json("success", "Lista de Subcategorias", subCategories)
-    except Exception as error:
-        print("Error: ", error)
-        message = "Lista de subcategorias não pode ser recuperada"
-        return response_json("error", message, data=None)
-
 @main.route("/transactions", methods=["POST"])
 def list_transactions():
     try:
-        currentYear = datetime.now().year
-        currentMonth = 10 #datetime.now().month
-        result = get_transactions(currentYear, currentMonth)
-        transactions = []
-
-        if result:
-            for item in result:
-                transaction_dict = item.to_dict()
-                transactions.append(transaction_dict)
-
-        return response_json("success", "Lista de transações", transactions)
+        data = request.get_json()
+        year = data.get('year')
+        month = data.get('month')
+        result = get_transactions(year, month)
+        return response_json("success", "Lista de transações", result)
     except Exception as error:
         print("Error: ", error)
-        return response_json(
-            "error", "Lista de transações não pode ser recuperada", data=None
-        )
-
-@main.route("/transactions-all", methods=["POST"])
-def list_all_transactions():
-    try:
-        result = get_all_transactions()
-        transactions = []
-
-        if result:
-            for item in result:
-                transaction_dict = item.to_dict()
-                transactions.append(transaction_dict)
-
-        return response_json("success", "Lista de transações", transactions)
-    except Exception as error:
-        print("Error: ", error)
-        return response_json(
-            "error", "Lista de transações não pode ser recuperada", data=None
-        )
-
+        return response_json("error", "Lista de transações não pode ser recuperada [2]", data=None)
+    
 @main.route("/transactions/filter", methods=["POST"])
 def filter_transactions():
     try:
@@ -129,6 +79,7 @@ def filter_transactions():
 def save_transaction():
     try:
         transaction_data = request.get_json()
+        print(transaction_data)
         if save_transaction_controller(transaction_data):
             return response_json("success", "Transação cadastrada com sucesso", "")
 
@@ -173,6 +124,28 @@ def delete_transaction(id):
         print("Error delete: ", error)
         return response_json("error", "Transação não pode ser excluída [2]", "")
 
+@main.route("/balance-total")
+def balance_total():
+    return render_template("balance-total.html")
+
+@main.route("/transactions-all", methods=["POST"])
+def list_all_transactions():
+    try:
+        result = get_all_transactions()
+        transactions = []
+
+        if result:
+            for item in result:
+                transaction_dict = item.to_dict()
+                transactions.append(transaction_dict)
+
+        return response_json("success", "Lista de transações", transactions)
+    except Exception as error:
+        print("Error: ", error)
+        return response_json(
+            "error", "Lista de transações não pode ser recuperada", data=None
+        )
+
 @main.route("/transactions/import", methods=["POST"])
 def import_transaction():
     try:
@@ -190,6 +163,26 @@ def import_transaction():
     except Exception as error:
         print(f"Error: {error}")
         return response_json("error", "Importação não pode ser realizada [2]", "")
+
+@main.route("/categories", methods=["POST"])
+def list_categories():
+    try:
+        categories = get_categories()
+        return response_json("success", "Lista de categorias", categories)
+    except Exception as error:
+        print("Error: ", error)
+        message = "Lista de categorias não pode ser recuperada"
+        return response_json("error", message, data=None)
+
+@main.route("/subcategories/<int:category_id>", methods=["POST"])
+def list_subCategories(category_id):
+    try:
+        subCategories = get_subCategories(category_id)
+        return response_json("success", "Lista de Subcategorias", subCategories)
+    except Exception as error:
+        print("Error: ", error)
+        message = "Lista de subcategorias não pode ser recuperada"
+        return response_json("error", message, data=None)
 
 @main.route("/generate_token", methods=["GET"])
 def get_csrf_token():
