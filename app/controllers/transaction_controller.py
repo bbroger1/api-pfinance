@@ -1,5 +1,6 @@
 from app.models import Transaction, Category, SubCategory
 from sqlalchemy import extract, Date, cast, desc, func, and_, case
+from sqlalchemy.orm import class_mapper
 from datetime import datetime, timedelta
 from ..database import db
 
@@ -358,8 +359,12 @@ def update_transaction_controller(transaction_data):
             transaction = Transaction.query.get(transaction_id)
 
             if transaction:
+                # Filtrar apenas chaves que existem no modelo Transaction
+                valid_keys = {column.name for column in class_mapper(Transaction).columns}
+
                 for key, value in transaction_data.items():
-                    setattr(transaction, key, value)
+                    if key in valid_keys:
+                        setattr(transaction, key, value)
 
                 db.session.commit()
                 return True

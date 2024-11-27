@@ -196,7 +196,7 @@
                             <h2 class="modal-title fs-5" id="modalEditLabel">Editar transação</h2>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
-                        <form onsubmit="FormEdit.submit(event)">
+                        <form id="form-modal-edit" onsubmit="submitFormEdit(event)">
                             <div class="modal-body">
                                 <div class="mb-2">
                                     <label class="form-label" for="editDescription"> Descrição</label>
@@ -206,7 +206,7 @@
                                 <div class="row mb-2">
                                     <div class="col-md-6">
                                         <label class="form-label" for="editCategory"> Categoria</label>
-                                        <select class="form-select" name="category" id="editCategory">
+                                        <select class="form-select" name="category" id="editCategory" onchange="Modal.updateSubcategories(this.value, 'editSubcategory')" >
                                             <option value="">Selecione</option>
                                         </select>
                                     </div>
@@ -233,8 +233,8 @@
                                             placeholder="0,00" />
                                     </div>
                                     <div class="col-md-4">
-                                        <label class="form-label" for="editDate"> Data</label>
-                                        <input class="form-control" type="date" id="editDate" name="date" placeholder="Data" />
+                                        <label class="form-label" for="editTransactionDate"> Data</label>
+                                        <input class="form-control" type="date" id="editTransactionDate" name="transactionDate" placeholder="Data" />
                                     </div>
                                 </div>
                             </div>

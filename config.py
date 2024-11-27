@@ -15,4 +15,4 @@ class Config(object):
     @staticmethod
     def init_app(app):
         logging.basicConfig()
-        logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+        logging.getLogger('sqlalchemy.engine').setLevel(logging.DEBUG)

@@ -1,7 +1,6 @@
-from typing import Optional
 from ..database import db
 from sqlalchemy import Date, DateTime, Integer, String
-from datetime import datetime, date
+from datetime import datetime
 import datetime
 
 
@@ -16,7 +15,7 @@ class Transaction(db.Model):
     )
     transaction_type: str = db.Column(String(100), nullable=False)
     amount: float = db.Column(db.Numeric(10, 2), nullable=False)
-    created_at = db.Column(DateTime, default=datetime.datetime.now())
+    created_at = db.Column(DateTime, default=datetime.datetime.now)
     transaction_date = db.Column(Date, nullable=False)
    
 

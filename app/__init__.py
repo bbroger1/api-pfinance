@@ -11,7 +11,7 @@ def create_app():
     app.config.from_object(Config)
 
     # Inicializa o logging
-    Config.init_app(app)
+    # Config.init_app(app)
     
     CORS(app, origins=["*"], expose_headers=["Content-Type", "X-CSRFToken"])
     app.register_blueprint(main)

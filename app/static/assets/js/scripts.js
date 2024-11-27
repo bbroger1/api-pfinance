@@ -265,11 +265,14 @@ const Transaction = {
 				.then((response) => response.json())
 				.then((data) => {
 					if (data.status == "success") {
-						closeModal("modal-edit");
-                        FormImport.clearFields();
-						
+						let date = new Date(transaction.transactionDate);
+						let year = date.getFullYear();
+						let month = date.getMonth() + 1;
+                        getTransactions(year, month);						
+                        FormEdit.clearFields();
+						closeModal("modal-edit");				
 					} else {
-						console.error("Error updating transaction:", response);
+						console.error("Error updating transaction:", data.message);
 					}
 				})
 				.catch((error) => {
@@ -343,8 +346,8 @@ function submitForm(event) {
     event.preventDefault();
 
     try {
-        const formData = new FormData(document.getElementById('form-modal'));
-        const dataObject = {};
+        let formData = new FormData(document.getElementById('form-modal'));
+        let dataObject = {};
         formData.forEach((value, key) => { dataObject[key] = value })
         Form.validateFields(dataObject);
         let transaction = Form.formatValues(dataObject)
@@ -355,104 +358,63 @@ function submitForm(event) {
 }
 
 const FormEdit = {
-	id: document.querySelector("input#editTransactionId"),
-	description: document.querySelector("input#editDescription"),
-	category: document.querySelector("select#editCategory"),
-	subcategory: document.querySelector("select#editSubcategory"),
-	transactionType: document.querySelector("select#editTransactionType"),
-	amount: document.querySelector("input#editAmount"),
-	date: document.querySelector("input#editDate"),
 
-	getValues() {
-		return {
-			id: FormEdit.id.value,
-			description: FormEdit.description.value,
-			category_id: FormEdit.category.value,
-			subcategory_id: FormEdit.subcategory.value,
-			transaction_type: FormEdit.transactionType.value,
-			amount: FormEdit.amount.value,
-			date: FormEdit.date.value,
-		};
+	validateFields(data) {
+		let { description, category, subcategory, amount, transactionType, transactionDate } = data;   
+		if (!description || !category || !subcategory || !amount || !transactionDate || !transactionType) {
+            throw new Error("Por favor, preencha todos os campos.");
+        }
 	},
 
-	validateFields() {
-		const {
-			description,
-			category_id,
-			subcategory_id,
-			transaction_type,
-			amount,
-			date,
-		} = FormEdit.getValues();
+	formatValues(data) {
+		let selectedCategory = document.getElementById("editCategory");
+		let selectedSubCategory = document.getElementById("editSubcategory");
 
-		if (
-			description.trim() === "" ||
-			amount.trim() === "" ||
-			category_id.trim() === "" ||
-			subcategory_id.trim() === "" ||
-			transaction_type.trim() === "" ||
-			date.trim() === ""
-		) {
-			throw new Error("Por favor, Preencha os todos os campos");
-		}
-	},
+		const categoryName = selectedCategory.options[selectedCategory.selectedIndex].text;
+		const subcategoryName = selectedSubCategory.options[selectedSubCategory.selectedIndex].text;
 
-	formatValues() {
-		let {
-			id,
-			description,
-			category_id,
-			subcategory_id,
-			transaction_type,
-			amount,
-		} = FormEdit.getValues();
-
-		amount = Utils.formatAmount(amount);
-
-		const categoryName = FormEdit.category.options[FormEdit.category.selectedIndex].text;
-		const subcategoryName = FormEdit.subcategory.options[FormEdit.subcategory.selectedIndex].text;
+		amount = Utils.formatAmount(data.amount);
+		
 		let transaction_acronym = ''
-		if(transaction_type === "receita"){
+		if(data.transactionType === "receita"){
 			transaction_acronym = 'R'
 		} else{
 			transaction_acronym = 'D'
 		}
 
 		return {
-			id,
-			description,
-			category_id,
+			id: data.transaction_id,
+			description: data.description,
+			category_id: data.category,
 			category_name: categoryName,
-			subcategory_id,
+			subcategory_id: data.subcategory,
 			subcategory_name: subcategoryName,
-			transaction_type,
+			transaction_type: data.transactionType,
+			transaction_date: data.transactionDate,
 			transaction_acronym,
 			amount,
 		};
 	},
 
 	clearFields() {
-		FormEdit.description.value = "";
-		FormEdit.category.value = "";
-		FormEdit.subcategory.value = "";
-		FormEdit.transactionType.value = "";
-		FormEdit.amount.value = "";
-		FormEdit.date.value = "";
-	},
-
-	submit(event) {
-		event.preventDefault();
-
-		try {
-			FormEdit.validateFields();
-			const transaction = FormEdit.formatValues();
-			Transaction.update(transaction);
-			FormEdit.clearFields();
-		} catch (error) {
-			alert(error);
-		}
-	},
+		document.getElementById("form-modal-edit").reset();
+	},	
 };
+
+function submitFormEdit(event) {
+	event.preventDefault();
+
+	try {
+		let formData = new FormData(document.getElementById('form-modal-edit'));
+		let dataObject = {};
+        formData.forEach((value, key) => { dataObject[key] = value })
+		FormEdit.validateFields(dataObject);
+		let transaction = FormEdit.formatValues(dataObject);
+		Transaction.update(transaction);		
+	} catch (error) {
+		alert(error);
+	}
+}
 
 const FormImport = {
 	validateFields(type, file) {
@@ -483,19 +445,17 @@ const FormImport = {
 
 function submitFormImport(event) {
     event.preventDefault();
-    console.log(event)
+
     try {        
         let type = document.getElementById("importType").value;
         let fileInput = document.getElementById("importFile");
         let file = fileInput.files[0];
-        console.log(type)
-        console.log(file)
 
         if (!file) {
             throw new Error("Por favor, selecione um arquivo [1].");
         }
         
-        const formData = new FormData();
+        let formData = new FormData();
         formData.append("type", type);
         formData.append("file", file);
 
@@ -640,7 +600,7 @@ async function transactionEdit(id) {
 
 			let dateObj = new Date(transactionData.data.transaction_date);
 			let formattedDate = dateObj.toISOString().split('T')[0];
-			document.getElementById("editDate").value = formattedDate
+			document.getElementById("editTransactionDate").value = formattedDate
 
 			const transactionTypeSelect = document.getElementById("editTransactionType");
 			const transactionTypes = [
