@@ -33,6 +33,7 @@ function getDashboard() {
 // função que recupera os dados da balance.html
 function getTransactions(year, month) {
     try {
+		// console.log("getTransacations: " + year + " - " + month)
         fetch(`${API_BASE_URL}/transactions`, {
             method: "POST",
             headers: {
@@ -44,6 +45,7 @@ function getTransactions(year, month) {
         })
             .then((response) => response.json())
             .then((data) => {
+				// console.log(data)
                 if (data.status === "success") {           
                     // Atualiza os totais no resumo
                     document.getElementById('incomeDisplay').innerText = data.data.incomes;
@@ -76,7 +78,7 @@ function getTransactions(year, month) {
                     } else {
                         // Adiciona cada transação à tabela
                         data.data.transactions.forEach(transaction => {
-                                const amount = Utils.formatCurrency(transaction.amount);
+                            const amount = Utils.formatCurrency(transaction.amount);
                             const transaction_date = Utils.formatDatetime(
                                 transaction.transaction_date
                             );
@@ -96,7 +98,7 @@ function getTransactions(year, month) {
                                     <img src="${API_BASE_URL}/static/assets/images/editar.png" alt="Editar Transação" width="23" title="Editar" class="cursor-pointer" 
                                         data-bs-toggle="modal" data-bs-target="#modal-edit" onclick="transactionEdit(${transaction.id})">
                                     <img src="${API_BASE_URL}/static/assets/images/deletar.png" alt="Remover Transação" width="20" title="Excluir" class="cursor-pointer" 
-                                        data-bs-toggle="modal" data-bs-target="#modal-delete" onclick="transactionDelete(${transaction.id})">
+                                        data-bs-toggle="modal" data-bs-target="#modal-delete" onclick="transactionDelete(${transaction.id}, ${year}, ${month})">
                                 </td>
                             `;
                             transactionList.appendChild(row);
@@ -117,9 +119,9 @@ function getTransactions(year, month) {
 const Transaction = {
 	all: [],
 
-	async populateTransactions() {
+	populateTransactions() {
 		try {
-			await fetch(`${API_BASE_URL}/transactions`, {
+			fetch(`${API_BASE_URL}/transactions`, {
 				method: "POST",
 				headers: {
 					"X-CSRFToken": csrfToken,
@@ -142,9 +144,9 @@ const Transaction = {
 		}
 	},
 
-	async allTransactions() {
+	allTransactions() {
 		try {
-			await fetch(`${API_BASE_URL}/transactions-all`, {
+			fetch(`${API_BASE_URL}/transactions-all`, {
 				method: "POST",
 				headers: {
 					"X-CSRFToken": csrfToken,
@@ -167,9 +169,9 @@ const Transaction = {
 		}
 	},
 
-	async filterTransactions(formData) {
+	filterTransactions(formData) {
 		try {
-			await fetch(`${API_BASE_URL}/transactions/filter`, {
+			fetch(`${API_BASE_URL}/transactions/filter`, {
 				method: "POST",
 				headers: {
 					"X-CSRFToken": csrfToken,
@@ -195,9 +197,9 @@ const Transaction = {
 		}
 	},
 
-	async add(transaction) {
+	add(transaction) {
 		try {
-			await fetch(`${API_BASE_URL}/transactions/insert`, {
+			fetch(`${API_BASE_URL}/transactions/insert`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -208,8 +210,10 @@ const Transaction = {
 				.then((response) => response.json())
 				.then((data) => {
 					if (data.status == "success") {
-                        let year = transaction.transaction_date.getFullYear();
-                        let month = transaction.transaction_date.getMonth() + 1;
+                        let date = new Date(transaction.transaction_date);
+						let year = date.getFullYear();
+    					let month = date.getMonth();
+						month = month + 1;
                         getTransactions(year, month)                       
                         Form.clearFields();
 						closeModal("modal");                        
@@ -225,9 +229,9 @@ const Transaction = {
 		}
 	},
 
-	async remove(id) {
+	remove(id, year, month) {
 		try {
-			await fetch(`${API_BASE_URL}/transactions/delete/${id}`, {
+			fetch(`${API_BASE_URL}/transactions/delete/${id}`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -238,8 +242,8 @@ const Transaction = {
 				.then((response) => response.json())
 				.then((data) => {
 					if (data.status == "success") {
+						getTransactions(year, month);
 						closeModal("modal-delete");
-						App.reload();
 					} else {
 						console.error("Error deleting transaction:", response);
 					}
@@ -252,9 +256,9 @@ const Transaction = {
 		}
 	},
 
-	async update(transaction) {
+	update(transaction) {
 		try {
-			await fetch(`${API_BASE_URL}/transactions/update`, {
+			fetch(`${API_BASE_URL}/transactions/update`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -265,9 +269,11 @@ const Transaction = {
 				.then((response) => response.json())
 				.then((data) => {
 					if (data.status == "success") {
-						let date = new Date(transaction.transactionDate);
-						let year = date.getFullYear();
-						let month = date.getMonth() + 1;
+						let date = new Date(transaction.transaction_date);
+						let year = date.getFullYear(); // Ano
+    					let month = date.getMonth();
+						month = month + 1;
+						console.log(year + " - " + typeof year + " - " + month + " - " + typeof month)
                         getTransactions(year, month);						
                         FormEdit.clearFields();
 						closeModal("modal-edit");				
@@ -283,9 +289,9 @@ const Transaction = {
 		}
 	},
 
-	async import(formData) {
+	import(formData) {
 		try {
-			await fetch(`${API_BASE_URL}/transactions/import`, {
+			fetch(`${API_BASE_URL}/transactions/import`, {
 				method: "POST",
 				headers: {
 					"X-CSRFToken": csrfToken,
@@ -567,10 +573,10 @@ const Modal = {
 }
 
 //modal confirmação de exclusão
-function transactionDelete(id) {
+function transactionDelete(id, year, month) {
 	var inputId = document.getElementById("btn-confirm-delete");
 	inputId.onclick = function () {
-		Transaction.remove(id);
+		Transaction.remove(id, year, month);
 	};
 }
 
