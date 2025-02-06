@@ -428,18 +428,26 @@ const FormImport = {
             throw new Error("Por favor, selecione um tipo de importação.");
         }
 
+		console.log(type)
+
         if (!file) {
             throw new Error("Por favor, selecione um arquivo.");
         }
 
-        const validTypes = ['text/csv', 'application/vnd.ms-excel', 'text/plain'];
-        if (!validTypes.includes(file.type)) {
-            throw new Error("O arquivo deve ser um CSV.");
+        const validTypesAccount = ['text/csv', 'application/vnd.ms-excel', 'text/plain'];
+		const validTypesCard = ['application/pdf'];
+
+        if (!validTypesAccount.includes(file.type) && type === "conta") {
+            throw new Error("O tipo do arquivo não é valido.");
         }
 
-        const maxSizeInBytes = 100 * 1024;
+		if (!validTypesCard.includes(file.type) && type === "cartao") {
+            throw new Error("O tipo do arquivo não é valido.");
+        }
+
+        const maxSizeInBytes = 500 * 1024;
         if (file.size > maxSizeInBytes) {
-            throw new Error("O tamanho do arquivo deve ser menor que 100 KB.");
+            throw new Error("O tamanho do arquivo deve ser de até 500 KB.");
         }
     },
 
