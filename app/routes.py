@@ -1,9 +1,8 @@
 from flask import jsonify, Blueprint, render_template, request
 from flask_wtf.csrf import generate_csrf
 from werkzeug.utils import secure_filename
-import datetime, csv, os, json, traceback, decimal
+import csv, os, decimal, tabula, pandas as pd
 from config import Config
-from datetime import datetime
 
 from .controllers.transaction_controller import *
 
@@ -149,11 +148,24 @@ def list_all_transactions():
 @main.route("/transactions/import", methods=["POST"])
 def import_transaction():
     try:
-        type_import = request.form.get("type")
+        type_import = request.form.get("type")        
+
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file part'}), 400
+        
         file = request.files["file"]
+        
+        if file.filename == '':
+            return jsonify({'error': 'No selected file'}), 400
+
         path = upload_file(file, type_import)
         delimiter = ";"
-        result = manager_file(path, delimiter )
+
+        if type_import == 'cartao':
+            # extract_tables(path)
+            result = manager_file_card(path, delimiter)
+        else:
+            result = manager_file(path, delimiter)
 
         if result:
             return response_json("success", "Importação realizada com sucesso", "")
@@ -161,7 +173,7 @@ def import_transaction():
         return response_json("error", "Importação não pode ser realizada [1]", "")
 
     except Exception as error:
-        print(f"Error: {error}")
+        print(f"Error import_transaction: {error}")
         return response_json("error", "Importação não pode ser realizada [2]", "")
 
 @main.route("/categories", methods=["POST"])
@@ -204,20 +216,16 @@ def manager_file(path, delimiter):
                 valor = abs(decimal.Decimal(linha[4].replace(".", "").replace(",", ".")))
                 valor *= 100
                 tipo_lancamento = linha[5].strip()
-                categoria = ""
-                subcategoria = ""
+                categoria = 4
+                subcategoria = 40
 
                 if lancamento in lancamentos_a_pular:
                     continue  # Pular a linha
                 
                 if tipo_lancamento == "Saída":
                     tipo_lancamento = "despesa"
-                    categoria = 4
-                    subcategoria = 40
                 elif tipo_lancamento == "Entrada":
                     tipo_lancamento = "receita"
-                    categoria = 5
-                    subcategoria = 41
 
                 #print(f"{data} - {tipo_lancamento} - {categoria} - {valor}")
 
@@ -239,33 +247,93 @@ def manager_file(path, delimiter):
 
         return True
     except csv.Error as e:
-        print("Erro ao ler o arquivo CSV:")
-        traceback.print_exc()
+        print("Erro ao ler o arquivo CSV (manager_file)", e)
         return False
     except Exception as e:
-        traceback.print_exc()
+        print("Erro manager_file:", e)
         return False
+
+def manager_file_card(path, delimiter):
+    try:
+        dados_csv = []
+        lancamentos_a_pular = {"Saldo Anterior", "Saldo do dia", "Saldo", "S A L D O"}
+        with open(path, newline="", encoding="utf-8") as file:
+            leitor_csv = csv.reader(file, delimiter=delimiter)
+            next(leitor_csv)
+            for linha in leitor_csv:
+                data = linha[0].strip()
+                lancamento = linha[1].strip()
+                detalhes = linha[2].strip()
+                numero_documento = linha[3].strip()
+                valor = abs(decimal.Decimal(linha[4].replace(".", "").replace(",", ".")))
+                valor *= 100
+                tipo_lancamento = linha[5].strip()
+                categoria = 4
+                subcategoria = 40
+
+                if lancamento in lancamentos_a_pular:
+                    continue  # Pular a linha
+                
+                if tipo_lancamento == "Saída":
+                    tipo_lancamento = "despesa"
+                elif tipo_lancamento == "Entrada":
+                    tipo_lancamento = "receita"
+
+                #print(f"{data} - {tipo_lancamento} - {categoria} - {valor}")
+
+                category = Category.query.get(categoria)
+                subcategory = SubCategory.query.get(subcategoria)
+
+                if category and subcategory:
+                    transaction = Transaction(
+                        category_id=category.id,
+                        subcategory_id=subcategory.id,
+                        transaction_type=tipo_lancamento,
+                        amount=valor,
+                        description=f"{lancamento} {detalhes} {numero_documento}",
+                        transaction_date=data,
+                    )
+
+                #print(transaction)
+                save_transaction_file_controller(transaction)
+
+        return True
+    except csv.Error as e:
+        print("Erro ao ler o arquivo CSV (manager_file)", e)
+        return False
+    except Exception as e:
+        print("Erro manager_file:", e)
+        return False
+
 
 def upload_file(file, type_import):
     if not file:
         return False
 
     try:
-        path = os.path.join(
-            Config.UPLOAD_FOLDER, type_import, secure_filename(file.filename)
-        )
+        # Define o caminho de upload
+        path = os.path.join(Config.UPLOAD_FOLDER, type_import, secure_filename(file.filename))
 
-        file_content = file.read()
+        # Garante que o diretório exista
+        os.makedirs(os.path.dirname(path), exist_ok=True)
 
-        try:
-            data_list = file_content.decode('utf-8').split('\n')
-        except UnicodeDecodeError:
-            data_list = file_content.decode('latin-1').split('\n')
+        # Verifica o tipo de arquivo
+        if type_import == 'conta':
+            # Para arquivos CSV
+            file_content = file.read()
+            try:
+                data_list = file_content.decode('utf-8').split('\n')
+            except UnicodeDecodeError:
+                data_list = file_content.decode('latin-1').split('\n')
 
-        with open(path, 'w', encoding='utf-8') as f:
-            for linha in data_list:
-                if linha.strip():
-                    f.write(linha)
+            with open(path, 'w', encoding='utf-8') as f:
+                for linha in data_list:
+                    if linha.strip():
+                        f.write(linha)
+
+        elif type_import == 'cartao':
+            with open(path, 'wb') as f:
+                f.write(file.read())
 
         return path
     except UnicodeDecodeError as e:
@@ -277,6 +345,23 @@ def upload_file(file, type_import):
     except Exception as e:
         print("Erro no upload do arquivo:", e)
         return False
+
+def extract_tables(uploaded_pdf_path):
+    # Extrair tabelas usando tabula
+    tables = tabula.read_pdf(uploaded_pdf_path, pages='all', multiple_tables=True)  # type: ignore
+
+    # Concatenar todas as tabelas em um único DataFrame
+    all_tables = pd.concat([pd.DataFrame(table) for table in tables], ignore_index=True)
+
+    # Criar o nome do CSV baseado no nome do PDF, sem a extensão
+    base_filename = os.path.splitext(os.path.basename(uploaded_pdf_path))[0]  # Remove a extensão
+    csv_filename = f"{base_filename}.csv"  # Adiciona a extensão .csv
+    csv_path = os.path.join(os.path.dirname(uploaded_pdf_path), csv_filename)  # Salva no mesmo diretório
+    
+    # Salvar todas as tabelas em um único arquivo CSV
+    all_tables.to_csv(csv_path, sep=';', index=False)
+
+    return csv_path  # Retorne o caminho do arquivo CSV gerado
 
 def response_json(status, message, data):
     return jsonify({"status": status, "message": message, "data": data})
